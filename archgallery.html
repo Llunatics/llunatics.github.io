@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <title>Gallery - My Linux Journey</title>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav container">
+            <a href="#" class="nav__logo">
+                DIKO
+            </a>
+            <div class="nav__menu" id="nav-menu">
+                <ul class="nav__list">
+                    <li class="nav__item">
+                        <a href="index.html" class="nav__link">Home</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="whylinux.html" class="nav__link">Why Linux?</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="whyarch.html" class="nav__link">Why I Chose Arch?</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="linuxexperience.html" class="nav__link">My Linux Experience</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="archgallery.html" class="nav__link">Gallery</a>
+                    </li>
+                </ul>
+                <div class="nav__close" id="nav-close">
+                    <i class='bx bx-x'></i>
+                </div>
+            </div>
+            <div class="nav__toggle" id="nav-toggle">
+                <i class='bx bx-grid-alt'></i>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section class="home">
+            <div class="home__container container">
+                <div class="home__data">
+                    <span class="home__subtitle">Gallery</span>
+                    <h1 class="home__title">Arch Gallery</h1>
+                    <p class="home__description">
+                        A collection of screenshots and photos from my Arch Linux setup and experiences.
+                    </p>
+                </div>
+                <div class="home__img">
+                    <img src="assets/img/gallery-img.png" alt="Gallery Image">
+                    <div class="home__shadow"></div>
+                </div>
+            </div>
+
+            <div class="container">
+                <section class="section">
+                    <h2 class="section__title">Gallery</h2>
+                    <div class="section__content gallery">
+                        <div class="gallery__item" data-scrollreveal="enter bottom">
+                            <img src="assets/img/gallery1.png" alt="Gallery Image 1">
+                            <p class="gallery__description">Custom desktop setup with i3wm</p>
+                        </div>
+                        <div class="gallery__item" data-scrollreveal="enter bottom">
+                            <img src="assets/img/gallery2.png" alt="Gallery Image 2">
+                            <p class="gallery__description">Terminal setup with custom themes</p>
+                        </div>
+                        <div class="gallery__item" data-scrollreveal="enter bottom">
+                            <img src="assets/img/gallery3.png" alt="Gallery Image 3">
+                            <p class="gallery__description">Coding environment with VSCode</p>
+                        </div>
+                        <div class="gallery__item" data-scrollreveal="enter bottom">
+                            <img src="assets/img/gallery4.png" alt="Gallery Image 4">
+                            <p class="gallery__description">Neofetch output showing system info</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <script src="assets/js/scrollreveal.min.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Initialize ScrollReveal
+        ScrollReveal().reveal('.home__data', { delay: 200 });
+        ScrollReveal().reveal('.home__img', { delay: 400 });
+        ScrollReveal().reveal('.gallery__item', { interval: 200 });
+    </script>
+</body>
+</html>

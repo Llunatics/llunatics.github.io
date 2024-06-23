@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <title>My Linux Experience - My Linux Journey</title>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav container">
+            <a href="#" class="nav__logo">
+                DIKO
+            </a>
+            <div class="nav__menu" id="nav-menu">
+                <ul class="nav__list">
+                    <li class="nav__item">
+                        <a href="index.html" class="nav__link">Home</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="whylinux.html" class="nav__link">Why Linux?</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="whyarch.html" class="nav__link">Why I Chose Arch?</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="linuxexperience.html" class="nav__link">My Linux Experience</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="archgallery.html" class="nav__link">Gallery</a>
+                    </li>
+                </ul>
+                <div class="nav__close" id="nav-close">
+                    <i class='bx bx-x'></i>
+                </div>
+            </div>
+            <div class="nav__toggle" id="nav-toggle">
+                <i class='bx bx-grid-alt'></i>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section class="home">
+            <div class="home__container container">
+                <div class="home__data">
+                    <span class="home__subtitle">My Journey</span>
+                    <h1 class="home__title">My Linux Experience</h1>
+                    <p class="home__description">
+                        Sharing my experiences and insights from using various Linux distributions over the years.
+                    </p>
+                    <a href="https://linux.org/" class="home__button">
+                        Learn More
+                    </a>
+                </div>
+                <div class="home__img">
+                    <img src="assets/img/linux-experience.png" alt="Linux Experience Image">
+                    <div class="home__shadow"></div>
+                </div>
+            </div>
+
+            <div class="container">
+                <section class="section">
+                    <h2 class="section__title">My Journey with Linux</h2>
+                    <div class="section__content">
+                        <div class="experience" data-scrollreveal="enter left">
+                            <h3 class="experience__title">Starting Out</h3>
+                            <p class="experience__description">
+                                My journey began with Ubuntu, a beginner-friendly distribution that introduced me to the world of Linux.
+                            </p>
+                        </div>
+                        <div class="experience" data-scrollreveal="enter right">
+                            <h3 class="experience__title">Exploring Distros</h3>
+                            <p class="experience__description">
+                                I explored various distributions like Fedora, Debian, and Mint to understand their unique features and use cases.
+                            </p>
+                        </div>
+                        <div class="experience" data-scrollreveal="enter left">
+                            <h3 class="experience__title">Settling on Arch</h3>
+                            <p class="experience__description">
+                                Eventually, I settled on Arch Linux for its simplicity, customization options, and rolling release model.
+                            </p>
+                        </div>
+                        <div class="experience" data-scrollreveal="enter right">
+                            <h3 class="experience__title">Current Setup</h3>
+                            <p class="experience__description">
+                                Today, I run a customized Arch Linux setup tailored to my needs, providing a stable and efficient work environment.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <script src="assets/js/scrollreveal.min.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Initialize ScrollReveal
+        ScrollReveal().reveal('.home__data', { delay: 200 });
+        ScrollReveal().reveal('.home__img', { delay: 400 });
+        ScrollReveal().reveal('.experience', { interval: 200 });
+    </script>
+</body>
+</html>

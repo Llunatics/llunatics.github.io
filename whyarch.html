@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <title>Why I Chose Arch? - My Linux Journey</title>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav container">
+            <a href="#" class="nav__logo">
+                DIKO
+            </a>
+            <div class="nav__menu" id="nav-menu">
+                <ul class="nav__list">
+                    <li class="nav__item">
+                        <a href="index.html" class="nav__link">Home</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="whylinux.html" class="nav__link">Why Linux?</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="whyarch.html" class="nav__link">Why I Chose Arch?</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="linuxexperience.html" class="nav__link">My Linux Experience</a>
+                    </li>
+                    <li class="nav__item">
+                        <a href="archgallery.html" class="nav__link">Gallery</a>
+                    </li>
+                </ul>
+                <div class="nav__close" id="nav-close">
+                    <i class='bx bx-x'></i>
+                </div>
+            </div>
+            <div class="nav__toggle" id="nav-toggle">
+                <i class='bx bx-grid-alt'></i>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section class="home">
+            <div class="home__container container">
+                <div class="home__data">
+                    <span class="home__subtitle">My Choice</span>
+                    <h1 class="home__title">Why I Chose Arch?</h1>
+                    <p class="home__description">
+                        Arch Linux offers a unique, customizable experience. Learn why it's my preferred Linux distribution.
+                    </p>
+                    <a href="https://archlinux.org/" class="home__button">
+                        Explore Arch Linux
+                    </a>
+                </div>
+                <div class="home__img">
+                    <img src="assets/img/arch-img.png" alt="Arch Linux Image">
+                    <div class="home__shadow"></div>
+                </div>
+            </div>
+
+            <div class="container">
+                <section class="section">
+                    <h2 class="section__title">Why Arch Linux?</h2>
+                    <div class="section__content">
+                        <div class="reason" data-scrollreveal="enter left">
+                            <i class='bx bx-cog reason__icon'></i>
+                            <h3 class="reason__title">Simplicity</h3>
+                            <p class="reason__description">
+                                Arch Linux adheres to the KISS (Keep It Simple, Stupid) philosophy, providing a minimal base system that you can build upon.
+                            </p>
+                        </div>
+                        <div class="reason" data-scrollreveal="enter right">
+                            <i class='bx bx-brush reason__icon'></i>
+                            <h3 class="reason__title">Customization</h3>
+                            <p class="reason__description">
+                                You have full control over your system, allowing you to customize every aspect to fit your needs and preferences.
+                            </p>
+                        </div>
+                        <div class="reason" data-scrollreveal="enter left">
+                            <i class='bx bx-up-arrow reason__icon'></i>
+                            <h3 class="reason__title">Rolling Release</h3>
+                            <p class="reason__description">
+                                Arch Linux uses a rolling release model, providing you with the latest software updates and features.
+                            </p>
+                        </div>
+                        <div class="reason" data-scrollreveal="enter right">
+                            <i class='bx bx-book-open reason__icon'></i>
+                            <h3 class="reason__title">Documentation</h3>
+                            <p class="reason__description">
+                                The Arch Wiki is a comprehensive resource, offering detailed documentation for all aspects of the system.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <script src="assets/js/scrollreveal.min.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        ScrollReveal().reveal('.home__data', { delay: 200 });
+        ScrollReveal().reveal('.home__img', { delay: 400 });
+        ScrollReveal().reveal('.reason', { interval: 200 });
+    </script>
+</body>
+</html>
