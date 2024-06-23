@@ -63,6 +63,11 @@ img {
   top: 0;
   left: 0;
   z-index: 100;
+  transition: top 0.5s;
+}
+
+.header.hidden {
+  top: 3.5rem;
 }
 
 .nav {
