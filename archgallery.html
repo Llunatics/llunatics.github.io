@@ -28,7 +28,7 @@
                         <a href="linuxexperience.html" class="nav__link">My Linux Experience</a>
                     </li>
                     <li class="nav__item">
-                        <a href="archgallery.html" class="nav__link">Gallery</a>
+                        <a href="archgallery.html" class="nav__link active-link">Gallery</a>
                     </li>
                 </ul>
                 <div class="nav__close" id="nav-close">
@@ -78,6 +78,25 @@
                             <p class="gallery__description">Neofetch output showing system info</p>
                         </div>
                     </div>
+                    <div class="section__content gallery">
+                        <div class="gallery__item" data-scrollreveal="enter bottom">
+                            <img src="assets/img/gallery5.png" alt="Gallery Image 5">
+                            <p class="gallery__description">Personalized Zsh shell with Oh My Zsh</p>
+                        </div>
+                        <div class="gallery__item" data-scrollreveal="enter bottom">
+                            <img src="assets/img/gallery6.png" alt="Gallery Image 6">
+                            <p class="gallery__description">Customized polybar setup</p>
+                        </div>
+                        <div class="gallery__item" data-scrollreveal="enter bottom">
+                            <img src="assets/img/gallery7.png" alt="Gallery Image 7">
+                            <p class="gallery__description">Simple and clean file manager setup</p>
+                        </div>
+                        <div class="gallery__item" data-scrollreveal="enter bottom">
+                            <img src="assets/img/gallery8.png" alt="Gallery Image 8">
+                            <p class="gallery__description">Lightweight music player setup</p>
+                        </div>
+                        <!-- Add more gallery items as needed -->
+                    </div>
                 </section>
             </div>
         </section>
@@ -86,7 +105,6 @@
     <script src="assets/js/scrollreveal.min.js"></script>
     <script src="assets/js/main.js"></script>
     <script>
-        // Initialize ScrollReveal
         ScrollReveal().reveal('.home__data', { delay: 200 });
         ScrollReveal().reveal('.home__img', { delay: 400 });
         ScrollReveal().reveal('.gallery__item', { interval: 200 });

@@ -1,76 +1,54 @@
 <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href='https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css' rel='stylesheet'>
-        <link rel="stylesheet" href="assets/css/styles.css">
-        <title>My Linux Journey</title>
-    </head>
-    <body>
-        <header class="header">
-            <nav class="nav container">
-                <a href="#" class="nav__logo">
-                    DIKO
-                </a>
-                <div class="nav__menu" id="nav-menu">
-                    <ul class="nav__list">
-                        <li class="nav__item">
-                            <a href="index.html" class="nav__link">Home</a>
-                        </li>
-                        <li class="nav__item">
-                            <a href="whylinux.html" class="nav__link">Why Linux?</a>
-                        </li>
-                        <li class="nav__item">
-                            <a href="whyarch.html" class="nav__link">Why I Chose Arch?</a>
-                        </li>
-                        <li class="nav__item">
-                            <a href="linuxexperience.html" class="nav__link">My Linux Experience</a>
-                        </li>
-                        <li class="nav__item">
-                            <a href="archgallery.html" class="nav__link">Gallery</a>
-                        </li>
-                    </ul>
-                    <div class="nav__close" id="nav-close">
-                        <i class='bx bx-x'></i>
-                    </div>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <title>My Linux Journey</title>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav container">
+            <a href="#" class="nav__logo">DIKO</a>
+            <div class="nav__menu" id="nav-menu">
+                <ul class="nav__list">
+                    <li class="nav__item"><a href="index.html" class="nav__link">Home</a></li>
+                    <li class="nav__item"><a href="whylinux.html" class="nav__link">Why Linux?</a></li>
+                    <li class="nav__item"><a href="whyarch.html" class="nav__link">Why I Chose Arch?</a></li>
+                    <li class="nav__item"><a href="linuxexperience.html" class="nav__link">My Linux Experience</a></li>
+                    <li class="nav__item"><a href="archgallery.html" class="nav__link">Gallery</a></li>
+                </ul>
+                <div class="nav__close" id="nav-close"><i class='bx bx-x'></i></div>
+            </div>
+            <div class="nav__toggle" id="nav-toggle"><i class='bx bx-grid-alt'></i></div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section class="home">
+            <div class="home__container container">
+                <div class="home__data">
+                    <h1 class="home__title">Arch Life</h1>
+                    <p class="home__description">
+                        Perjalanan saya dengan Arch Linux,<br> mulai dari alasan hingga pengalaman.
+                    </p>
+                    <a href="https://archlinux.org/" class="home__button">Situs Arch</a>
                 </div>
-                <div class="nav__toggle" id="nav-toggle">
-                    <i class='bx bx-grid-alt'></i>
+                <div class="home__img">
+                    <img src="assets/img/arch-img.png" alt="Arch Image">
+                    <div class="home__shadow"></div>
                 </div>
-            </nav>
-        </header>
+            </div>
+            <footer class="home__footer">
+                <span>(+62) 8190-5860-662</span>
+                <span>|</span>
+                <span>llunaticsys@gmail.com</span>
+            </footer>
+        </section>
+    </main>
 
-        <main class="main">
-            <section class="home">
-                <div class="home__container container">
-                    <div class="home__data">
-                        <span class="home__subtitle"></span>
-                        <h1 class="home__title">Arch Life</h1>
-                        <p class="home__description">
-                            Perjalanan saya dengan Arch Linux,<br> mulai dari alasan hingga pengalaman. 
-                        </p>
-                        <a href="https://archlinux.org/" class="home__button">
-                            Situs Arch
-                        </a>
-                    </div>
-
-                    <div class="home__img">
-                        <img src="assets/img/arch-img.png" alt="">
-                        <div class="home__shadow"></div>
-                    </div>
-                </div>
-
-                <footer class="home__footer">
-                    <span>(+62) 8190-5860-662</span>
-                    <span>|</span>
-                    <span>llunaticsys@gmail.com</span>
-                </footer>
-            </section>
-        </main>
-
-        <script src="assets/js/scrollreveal.min.js"></script>
-
-        <script src="assets/js/main.js"></script>
-    </body>
+    <script src="assets/js/scrollreveal.min.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
 </html>

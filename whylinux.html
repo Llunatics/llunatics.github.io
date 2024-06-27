@@ -10,34 +10,18 @@
 <body>
     <header class="header">
         <nav class="nav container">
-            <a href="#" class="nav__logo">
-                DIKO
-            </a>
+            <a href="#" class="nav__logo">DIKO</a>
             <div class="nav__menu" id="nav-menu">
                 <ul class="nav__list">
-                    <li class="nav__item">
-                        <a href="index.html" class="nav__link">Home</a>
-                    </li>
-                    <li class="nav__item">
-                        <a href="whylinux.html" class="nav__link">Why Linux?</a>
-                    </li>
-                    <li class="nav__item">
-                        <a href="whyarch.html" class="nav__link">Why I Chose Arch?</a>
-                    </li>
-                    <li class="nav__item">
-                        <a href="linuxexperience.html" class="nav__link">My Linux Experience</a>
-                    </li>
-                    <li class="nav__item">
-                        <a href="archgallery.html" class="nav__link">Gallery</a>
-                    </li>
+                    <li class="nav__item"><a href="index.html" class="nav__link">Home</a></li>
+                    <li class="nav__item"><a href="whylinux.html" class="nav__link">Why Linux?</a></li>
+                    <li class="nav__item"><a href="whyarch.html" class="nav__link">Why I Chose Arch?</a></li>
+                    <li class="nav__item"><a href="linuxexperience.html" class="nav__link">My Linux Experience</a></li>
+                    <li class="nav__item"><a href="archgallery.html" class="nav__link">Gallery</a></li>
                 </ul>
-                <div class="nav__close" id="nav-close">
-                    <i class='bx bx-x'></i>
-                </div>
+                <div class="nav__close" id="nav-close"><i class='bx bx-x'></i></div>
             </div>
-            <div class="nav__toggle" id="nav-toggle">
-                <i class='bx bx-grid-alt'></i>
-            </div>
+            <div class="nav__toggle" id="nav-toggle"><i class='bx bx-grid-alt'></i></div>
         </nav>
     </header>
 
@@ -50,9 +34,7 @@
                     <p class="home__description">
                         Linux is a versatile and powerful operating system used by millions around the world. Learn why it stands out!
                     </p>
-                    <a href="https://www.linux.org/" class="home__button">
-                        Explore Linux
-                    </a>
+                    <a href="https://www.linux.org/" class="home__button">Explore Linux</a>
                 </div>
                 <div class="home__img">
                     <img src="assets/img/linux-img.png" alt="Linux Image">
@@ -62,22 +44,23 @@
 
             <div class="container">
                 <section class="section">
+                    <h2 class="section__title">My Reasons for Choosing Linux</h2>
                     <p>
-                        My journey with Linux began several years ago when I was looking for an operating system that offered more control and flexibility than the standard options available. I was intrigued by the idea of using an open-source platform that could be customized to fit my specific needs. 
-                    </p>
+                        My journey with Linux began several years ago when I was looking for an operating system that offered more control and flexibility than the standard options available. I was intrigued by the idea of using an open-source platform that could be customized to fit my specific needs.
+                    </p><br>
                     <p>
                         One of the first things that caught my attention was the robust security features that Linux provides. Unlike other operating systems, Linux is less susceptible to malware and viruses, which gave me peace of mind knowing my data was more secure.
-                    </p>
+                    </p><br>
                     <p>
                         Another major factor was the open-source nature of Linux. The fact that it is free to use and modify meant that I could tailor it exactly to my liking, and the community of developers constantly improving the system ensured that it stayed up-to-date and efficient.
-                    </p>
+                    </p><br>
                     <p>
-                        I also loved the customization options available with Linux. Whether it was changing the desktop environment or tweaking system settings, Linux allowed me to make my system truly my own. 
-                    </p>
+                        I also loved the customization options available with Linux. Whether it was changing the desktop environment or tweaking system settings, Linux allowed me to make my system truly my own.
+                    </p><br>
                     <p>
                         Finally, the performance and stability of Linux systems were unmatched. They can run on a wide range of hardware, from powerful servers to low-end desktops, which made it a versatile choice for all my computing needs.
-                    </p>
-                    <h2 class="section__title">Reasons to Choose Linux</h2>
+                    </p><br>
+                    <h2 class="section__title">Key Advantages of Linux</h2>
                     <div class="section__content">
                         <div class="reason" data-scrollreveal="enter left">
                             <i class='bx bx-shield-quarter reason__icon'></i>
@@ -113,13 +96,19 @@
         </section>
     </main>
 
-    <div>
-        <footer class="home__footer">
-            <span>Andiko Ramadani</span>
-            <span>|</span>
-            <span>Informatika</span>
-        </footer>
-    </div>
+    <footer class="home__footer">
+        <span>Andiko Ramadani</span>
+        <span>|</span>
+        <span>Informatika</span>
+    </footer>
+
+    <script src="assets/js/scrollreveal.min.js"></script>
     <script src="assets/js/main.js"></script>
+    <script>
+        // Initialize ScrollReveal
+        ScrollReveal().reveal('.home__data', { delay: 200 });
+        ScrollReveal().reveal('.home__img', { delay: 400 });
+        ScrollReveal().reveal('.experience', { interval: 200 });
+    </script>
 </body>
 </html>
