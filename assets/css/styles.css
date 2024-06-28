@@ -98,11 +98,11 @@ img {
   top: 0;
   left: 0;
   z-index: 100;
-  transition: top 0.3s; /* Mempercepat transisi untuk responsif */
+  transition: top 0.3s;
 }
 
 .header.hidden {
-  top: -100%; /* Menyembunyikan header dengan menggeser ke atas sejauh 100% */
+  top: -100%;
 }
 
 .nav {
