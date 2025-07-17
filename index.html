@@ -1,54 +1,165 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href='https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="assets/css/styles.css">
-    <title>My Linux Journey</title>
+    <title>Andiko Ramadani - Landing Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #dbeafe 0%, #f8fafc 100%);
+
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #1f2937;
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 600px;
+            width: 90%;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.85;
+            color: #374151;
+        }
+
+        .links {
+            display: grid;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .link-card {
+            background: rgba(255, 255, 255, 0.4);
+            padding: 20px 30px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #1f2937;
+            transition: all 0.3s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .link-card:hover {
+            background: rgba(255, 255, 255, 0.55);
+            transform: scale(1.02);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .link-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+            color: #1f2937;
+        }
+
+        .link-card p {
+            font-size: 0.9rem;
+            opacity: 0.75;
+            color: #4b5563;
+        }
+
+        .arrow {
+            font-size: 1.5rem;
+            color: #1f2937;
+        }
+
+        .social-links {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .social-links a {
+            color: #1f2937;
+            text-decoration: none;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            transition: all 0.3s ease-in-out;
+            font-weight: 500;
+        }
+
+        .social-links a:hover {
+            background: rgba(255, 255, 255, 0.55);
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .link-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .arrow {
+                margin-top: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <header class="header">
-        <nav class="nav container">
-            <a href="#" class="nav__logo">DIKO</a>
-            <div class="nav__menu" id="nav-menu">
-                <ul class="nav__list">
-                    <li class="nav__item"><a href="index.html" class="nav__link">Home</a></li>
-                    <li class="nav__item"><a href="whylinux.html" class="nav__link">Why Linux?</a></li>
-                    <li class="nav__item"><a href="whyarch.html" class="nav__link">Why I Chose Arch?</a></li>
-                    <li class="nav__item"><a href="linuxexperience.html" class="nav__link">My Linux Experience</a></li>
-                    <li class="nav__item"><a href="archgallery.html" class="nav__link">Gallery</a></li>
-                </ul>
-                <div class="nav__close" id="nav-close"><i class='bx bx-x'></i></div>
-            </div>
-            <div class="nav__toggle" id="nav-toggle"><i class='bx bx-grid-alt'></i></div>
-        </nav>
-    </header>
-
-    <main class="main">
-        <section class="home">
-            <div class="home__container container">
-                <div class="home__data">
-                    <h1 class="home__title">Arch Life</h1>
-                    <p class="home__description">
-                        Perjalanan saya dengan Arch Linux,<br> mulai dari alasan hingga pengalaman.
-                    </p>
-                    <a href="https://archlinux.org/" class="home__button">Situs Arch</a>
+    <div class="container">
+        <h1>Andiko Ramadani</h1>
+        <p class="subtitle">Cybersecurity & Cloud Computing Enthusiast</p>
+        
+        <div class="links">
+            <a href="/portfolio" class="link-card">
+                <div>
+                    <h3>📁 Portfolio</h3>
+                    <p>Professional portfolio & experience</p>
                 </div>
-                <div class="home__img">
-                    <img src="assets/img/arch-img.png" alt="Arch Image">
-                    <div class="home__shadow"></div>
+                <span class="arrow">→</span>
+            </a>
+            
+            <a href="/arch-linux" class="link-card">
+                <div>
+                    <h3>🐧 Why Arch Linux?</h3>
+                    <p>My journey with Arch Linux</p>
                 </div>
-            </div>
-            <footer class="home__footer">
-                <span>(+62) 8190-5860-662</span>
-                <span>|</span>
-                <span>llunaticsys@gmail.com</span>
-            </footer>
-        </section>
-    </main>
-
-    <script src="assets/js/scrollreveal.min.js"></script>
-    <script src="assets/js/main.js"></script>
+                <span class="arrow">→</span>
+            </a>
+        </div>
+        
+        <div class="social-links">
+            <a href="https://linkedin.com/in/andiko-ramadani" target="_blank">LinkedIn</a>
+            <a href="https://github.com/llunatics" target="_blank">GitHub</a>
+            <a href="mailto:dikorm00@gmail.com">Email</a>
+        </div>
+    </div>
 </body>
 </html>
