@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronicles of Aethel: Ruins of Time</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Variabel warna tema yang akan diubah oleh JS */
+            --theme-glow: rgba(132, 204, 22, 0.7);
+            --theme-border: #84cc16;
+            --theme-text: #a3e635;
+        }
+        body { background-color: #0c141c; color: #e0e0e0; font-family: 'Inter', sans-serif; overflow: hidden; }
+        .font-cinzel { font-family: 'Cinzel', serif; }
+
+        #ruinsCanvas, #background-image { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease-out, opacity 0.8s ease-in-out; }
+        #ruinsCanvas { z-index: 1; }
+        #background-image { z-index: 0; opacity: 0.6; filter: blur(0px) brightness(0.9); }
+        
+        /* Header untuk About Us & Contact */
+        #main-header { position: fixed; top: 1rem; right: 1rem; z-index: 50; display: flex; gap: 1rem; }
+        .header-link { background: rgba(12, 20, 28, 0.5); border: 1px solid var(--theme-text); color: var(--theme-text); padding: 0.5rem 1rem; border-radius: 20px; text-decoration: none; transition: all 0.3s ease; backdrop-filter: blur(5px); cursor: pointer;}
+        .header-link:hover { background: var(--theme-text); color: #0c141c; box-shadow: 0 0 15px var(--theme-glow); }
+
+        .slider-container { position: relative; width: 100%; height: 100vh; display: flex; align-items: center; justify-content: center; z-index: 2; }
+        .character-card { display: flex; flex-direction: column; align-items: center; width: 90%; max-width: 480px; text-align: center; transition: all 0.7s ease-in-out; }
+        
+        .character-image-wrapper { 
+            position: relative; 
+            filter: drop-shadow(0 10px 30px rgba(0,0,0,0.6)); 
+            margin-bottom: -50px; 
+            z-index: 10; 
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .character-image { max-height: 50vh; height: auto; transition: transform 0.7s ease-in-out, opacity 0.7s ease-in-out; transform: translateY(50px); opacity: 0; border-radius: 10px; }
+        .character-info-box { background: linear-gradient(180deg, rgba(12, 20, 28, 0.6) 0%, rgba(12, 20, 28, 0.9) 100%); backdrop-filter: blur(8px); border: 1px solid; border-color: var(--theme-border); border-radius: 15px; padding: 70px 2rem 2rem 2rem; width: 100%; box-shadow: 0 0 30px var(--theme-glow); transition: all 0.5s ease; }
+        .char-element { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease-out, transform 0.5s ease-out; }
+        .character-card.active .character-image { transform: translateY(0); opacity: 1; }
+        .character-card.active .char-element { opacity: 1; transform: translateY(0); }
+        .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(12, 20, 28, 0.5); border: 1px solid var(--theme-border); color: var(--theme-text); width: 50px; height: 50px; border-radius: 50%; font-size: 24px; transition: all 0.3s ease; z-index: 20; }
+        .nav-btn:hover { background: var(--theme-border); color: #0c141c; }
+        #prev-btn { left: 5%; }
+        #next-btn { right: 5%; }
+        .slider-pagination { position: absolute; bottom: 2rem; display: flex; gap: 15px; z-index: 20; }
+        .pagination-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.3s ease; }
+        .pagination-dot.active { background: var(--theme-text); transform: scale(1.3); box-shadow: 0 0 10px var(--theme-glow); }
+        .text-glow { color: var(--theme-text); text-shadow: 0 0 15px var(--theme-glow); }
+        .ai-button { background-color: transparent; border: 1px solid var(--theme-border); color: var(--theme-text); padding: 8px 16px; border-radius: 20px; transition: all 0.3s ease; cursor: pointer; white-space: nowrap; }
+        .ai-button:hover:not(:disabled) { background-color: var(--theme-border); color: #0c141c; box-shadow: 0 0 15px var(--theme-glow); }
+        .ai-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .ai-content { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; margin-top: 1rem; min-height: 80px; border-left: 3px solid var(--theme-border); text-align: left; transition: all 0.5s ease; }
+        .quest-content h4, .tactic-content h4 { font-family: 'Cinzel', serif; color: var(--theme-text); margin-top: 0.5rem; margin-bottom: 0.25rem; }
+        
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { border: 3px solid rgba(255, 255, 255, 0.2); border-left-color: var(--theme-text); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 99; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+        .modal-overlay.visible { opacity: 1; pointer-events: auto; }
+        .modal-content-box { background: #0c141c; border: 1px solid var(--theme-border); border-radius: 15px; width: 90%; max-width: 500px; box-shadow: 0 0 30px var(--theme-glow); display: flex; flex-direction: column; max-height: 80vh; transform: scale(0.95); transition: transform 0.3s ease; }
+        .modal-overlay.visible .modal-content-box { transform: scale(1); }
+        .modal-header { padding: 1rem; border-bottom: 1px solid var(--theme-border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-family: 'Cinzel', serif; font-size: 1.25rem; color: var(--theme-text); }
+        .modal-close-btn { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+
+        #dialog-messages { flex-grow: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 1rem; }
+        .message { max-width: 80%; padding: 0.5rem 1rem; border-radius: 15px; line-height: 1.5; }
+        .message.user { background-color: #374151; align-self: flex-end; }
+        .message.char { background-color: #1f2937; align-self: flex-start; }
+        #dialog-input-form { display: flex; padding: 1rem; border-top: 1px solid var(--theme-border); gap: 1rem; }
+        #dialog-input { flex-grow: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--theme-border); color: #fff; border-radius: 20px; padding: 0.5rem 1rem; outline: none; }
+        #dialog-send-btn { background: var(--theme-border); color: #0c141c; border: none; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        #dialog-send-btn:disabled { background: #4b5563; }
+
+        #mission-board-overlay, #about-us-overlay { z-index: 100; }
+        #mission-board-canvas, #about-us-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 101; }
+        .page-content { position: relative; z-index: 102; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 1rem;}
+        .page-close-btn { position: absolute; top: 2rem; right: 2rem; background: rgba(255,255,255,0.1); border: 1px solid #fff; width: 40px; height: 40px; border-radius: 50%; color: #fff; font-size: 1.5rem; cursor: pointer; z-index: 103; }
+        
+        #mission-board-overlay { background-image: url('https://www.transparenttextures.com/patterns/dark-wood.png'), linear-gradient(rgba(12,20,28,0.95), rgba(12,20,28,0.95)); }
+        .mission-card { background-color: #fdf6e3; color: #583c22; border-radius: 5px; padding: 1.5rem; width: 300px; box-shadow: 5px 5px 15px rgba(0,0,0,0.5); text-align: left; border-left: 5px solid #c89c6d; }
+        .mission-card h4 { font-family: 'Cinzel', serif; font-weight: bold; font-size: 1.2rem; }
+        .mission-accept-btn { background-color: #8f724f; color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; margin-top: 1rem; width: 100%; }
+
+        #about-us-overlay { background: linear-gradient(45deg, #111827, #1e1b4b, #0c141c); }
+        #about-us-content { max-width: 600px; background: rgba(12, 20, 28, 0.7); backdrop-filter: blur(10px); color: #e5e7eb; padding: 2.5rem; border-radius: 10px; border: 1px solid #a3e635; text-align: left; line-height: 1.8; }
+        
+        #contact-modal .modal-content-box { max-width: 350px; text-align: center; }
+        #contact-modal a { display: inline-block; margin-top: 1rem; background-color: #E1306C; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: bold; transition: transform 0.2s ease; animation: pulse-glow 2s infinite; }
+        #contact-modal a:hover { transform: scale(1.05); }
+        @keyframes pulse-glow { 0% { box-shadow: 0 0 10px #E1306C; } 50% { box-shadow: 0 0 25px #E1306C; } 100% { box-shadow: 0 0 10px #E1306C; } }
+
+    </style>
+</head>
+<body>
+    <img id="background-image" src="https://i.pinimg.com/736x/da/18/de/da18de6628dfd7038df662ec251e33ec.jpg" onerror="this.src='https://images.unsplash.com/photo-1628872451522-0e53381a5a2b?q=80&w=1920&auto=format&fit=crop'" alt="Latar Belakang Pemandangan Fantasi">
+    <canvas id="ruinsCanvas"></canvas>
+
+    <header id="main-header">
+        <button id="open-about-us-btn" class="header-link">About Us</button>
+        <button id="open-contact-btn" class="header-link">Contact</button>
+    </header>
+
+    <div class="slider-container">
+        <div id="character-slider"></div>
+        <button id="prev-btn" class="nav-btn">‹</button>
+        <button id="next-btn" class="nav-btn">›</button>
+        <div id="pagination" class="slider-pagination"></div>
+        <button id="open-mission-board-btn" class="ai-button fixed bottom-4 left-4 z-20">Papan Misi Harian</button>
+    </div>
+    
+    <div id="dialog-modal-overlay" class="modal-overlay">
+        <div id="dialog-modal" class="modal-content-box">
+            <div id="dialog-header" class="modal-header"><h3 id="dialog-title" class="modal-title"></h3><button id="dialog-close-btn" class="modal-close-btn">&times;</button></div>
+            <div id="dialog-messages"></div>
+            <form id="dialog-input-form"><input type="text" id="dialog-input" placeholder="Ketik pesanmu..." autocomplete="off"><button type="submit" id="dialog-send-btn">Kirim</button></form>
+        </div>
+    </div>
+    
+    <div id="mission-board-overlay" class="modal-overlay">
+        <canvas id="mission-board-canvas"></canvas>
+        <div class="page-content">
+            <h2 class="font-cinzel text-5xl text-amber-200 mb-8" style="text-shadow: 2px 2px 10px #000;">Papan Misi Harian</h2>
+            <div id="mission-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-4"></div>
+            <button id="mission-board-close-btn" class="page-close-btn">&times;</button>
+        </div>
+    </div>
+    
+    <div id="about-us-overlay" class="modal-overlay">
+        <canvas id="about-us-canvas"></canvas>
+        <div class="page-content">
+             <div id="about-us-content">
+                 <h2 class="font-cinzel text-4xl text-green-300 mb-4" style="--theme-text: #a3e635;">Sang Arsitek Dunia</h2>
+                 <p class="mb-4">Di balik setiap dunia yang megah, ada seorang Arsitek Mimpi. Untuk dunia Aethel yang penuh keajaiban dan reruntuhan waktu, arsitek itu adalah <strong>Muhammad Rivaldy Pratama</strong>.</p>
+                 <p class="mb-4">Ia bukanlah sekadar pengembang, melainkan seorang pencerita yang merangkai kode seperti puisi dan mendesain logika layaknya sihir. Dari gairahnya pada kisah-kisah epik dan seni yang memukau, ia membisikkan kehidupan pada dunia Chronicles of Aethel: Ruins of Time.</p>
+                 <p>Setiap partikel cahaya yang menari, setiap pahlawan yang menjawab panggilan takdir, semuanya lahir dari imajinasi dan dedikasinya. Proyek ini adalah bukti bahwa dengan hasrat, sebuah dunia baru yang spektakuler bisa diciptakan dari nol.</p>
+             </div>
+            <button id="about-us-close-btn" class="page-close-btn">&times;</button>
+        </div>
+    </div>
+
+    <div id="contact-modal" class="modal-overlay">
+        <div class="modal-content-box" style="--theme-border:#E1306C; --theme-glow:rgba(225, 48, 108, 0.7);">
+            <div class="modal-header">
+                <h3 class="modal-title" style="color:#f9a8d4;">Hubungi Sang Kreator</h3>
+                <button id="contact-close-btn" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="p-6 text-center">
+                <p>Terhubung dengan Muhammad Rivaldy Pratama di Instagram untuk melihat lebih banyak karya dan proses di balik layar.</p>
+                <a href="https://www.instagram.com/im_luminouus?igsh=Z2UxM3FjNHh1NHQ1" target="_blank">
+                    im_luminouus
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const ruinsCanvas = document.getElementById('ruinsCanvas');
+            const ruinsCtx = ruinsCanvas.getContext('2d');
+            const bgImage = document.getElementById('background-image');
+
+            let particles = [];
+            let themePulses = []; 
+            let currentAnimationType = 'time';
+
+            const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+
+            function resizeRuinsCanvas() { 
+                ruinsCanvas.width = window.innerWidth; 
+                ruinsCanvas.height = window.innerHeight; 
+            }
+            window.addEventListener('resize', resizeRuinsCanvas);
+            resizeRuinsCanvas();
+
+            function handlePointerMove(e) {
+                const pointer = e.touches ? e.touches[0] : e;
+                mouse.x = pointer.clientX;
+                mouse.y = pointer.clientY;
+                const parallaxX = (mouse.x - window.innerWidth / 2) / 50;
+                const parallaxY = (mouse.y - window.innerHeight / 2) / 50;
+                bgImage.style.transform = `translate(${parallaxX}px, ${parallaxY}px) scale(1.05)`;
+            }
+            window.addEventListener('mousemove', handlePointerMove);
+            window.addEventListener('touchmove', handlePointerMove);
+            
+            // --- PARTICLE & EFFECT CLASSES ---
+            class Particle {
+                constructor(x, y) { this.x = x; this.y = y; this.life = 1; }
+                update() { this.life -= 0.005; return this.life > 0; }
+                draw() {}
+            }
+            // Eizalith's Animations
+            class SakuraPetal extends Particle {
+                constructor() {
+                    super(Math.random() * ruinsCanvas.width, -10);
+                    this.size = Math.random() * 5 + 5;
+                    this.speedY = Math.random() * 0.8 + 0.5;
+                    this.speedX = Math.random() + 0.5;
+                    this.rotation = Math.random() * Math.PI * 2;
+                    this.sway = Math.random() * Math.PI * 2;
+                    this.swaySpeed = Math.random() * 0.02 + 0.01;
+                    this.swayAmplitude = Math.random() * 0.5 + 0.2;
+                }
+                update() {
+                    this.y += this.speedY;
+                    this.sway += this.swaySpeed;
+                    this.x += Math.sin(this.sway) * this.swayAmplitude;
+                    this.rotation += this.swaySpeed; // Rotate based on sway
+                    if (this.y > ruinsCanvas.height + 10) this.life = 0;
+                    return super.update();
+                }
+                draw() {
+                    ruinsCtx.save();
+                    ruinsCtx.translate(this.x, this.y);
+                    ruinsCtx.rotate(this.rotation);
+                    ruinsCtx.beginPath();
+                    ruinsCtx.moveTo(0, 0);
+                    ruinsCtx.bezierCurveTo(this.size, this.size / 2, this.size, this.size * 1.5, 0, this.size * 2);
+                    ruinsCtx.bezierCurveTo(-this.size, this.size * 1.5, -this.size, this.size / 2, 0, 0);
+                    ruinsCtx.fillStyle = `rgba(221, 160, 221, ${0.8 * this.life})`;
+                    ruinsCtx.shadowColor = `rgba(255, 192, 203, 0.7)`;
+                    ruinsCtx.shadowBlur = 5;
+                    ruinsCtx.fill();
+                    ruinsCtx.restore();
+                }
+            }
+            class TimeRift extends Particle {
+                constructor() { super(Math.random() * ruinsCanvas.width, Math.random() * ruinsCanvas.height); this.radius = 0; this.maxRadius = Math.random() * 50 + 20; this.speed = 0.3; this.life = 1; }
+                update() { this.radius += this.speed; return super.update(); }
+                draw() { ruinsCtx.strokeStyle = `rgba(216, 180, 254, ${0.5 * this.life})`; ruinsCtx.lineWidth = 1.5; ruinsCtx.beginPath(); ruinsCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ruinsCtx.stroke(); }
+            }
+
+            // Vallus's Animations
+            class DarkRainDrop extends Particle {
+                constructor() { super(Math.random() * ruinsCanvas.width, -20); this.len = Math.random() * 15 + 5; this.speed = Math.random() * 8 + 6; }
+                update() { this.y += this.speed; if (this.y > ruinsCanvas.height + 20) this.life = 0; return this.life > 0; }
+                draw() { ruinsCtx.strokeStyle = `rgba(50, 50, 60, 0.5)`; ruinsCtx.lineWidth = 1; ruinsCtx.beginPath(); ruinsCtx.moveTo(this.x, this.y); ruinsCtx.lineTo(this.x, this.y + this.len); ruinsCtx.stroke(); }
+            }
+            class FallingFeather extends Particle {
+                constructor() {
+                    super(Math.random() * ruinsCanvas.width, -10);
+                    this.size = Math.random() * 8 + 8;
+                    this.speedY = Math.random() * 1 + 0.5;
+                    this.rotation = Math.random() * Math.PI;
+                    this.sway = Math.random() * Math.PI * 2;
+                    this.swaySpeed = Math.random() * 0.03 + 0.02;
+                    this.swayAmplitude = Math.random() * 1 + 0.5;
+                }
+                update() {
+                    this.y += this.speedY;
+                    this.sway += this.swaySpeed;
+                    this.x += Math.sin(this.sway) * this.swayAmplitude;
+                    this.rotation += this.swaySpeed * 0.2;
+                    if (this.y > ruinsCanvas.height + 10) this.life = 0;
+                    return super.update();
+                }
+                draw() {
+                    ruinsCtx.save();
+                    ruinsCtx.translate(this.x, this.y);
+                    ruinsCtx.rotate(this.rotation);
+                    ruinsCtx.beginPath();
+                    ruinsCtx.moveTo(0, 0);
+                    ruinsCtx.bezierCurveTo(this.size / 2, -this.size / 4, this.size, -this.size / 2, this.size, 0);
+                    ruinsCtx.bezierCurveTo(this.size, this.size / 2, this.size / 2, this.size / 4, 0, 0);
+                    ruinsCtx.fillStyle = `rgba(10, 10, 20, ${0.8 * this.life})`;
+                    ruinsCtx.fill();
+                    ruinsCtx.restore();
+                }
+            }
+            class BlackSlash extends Particle {
+                constructor() {
+                    const startY = Math.random() * ruinsCanvas.height;
+                    const endY = Math.random() * ruinsCanvas.height;
+                    super(-50, startY);
+                    this.endX = ruinsCanvas.width + 50;
+                    this.endY = endY;
+                    this.midX = (this.x + this.endX) / 2 + (Math.random() - 0.5) * 200;
+                    this.midY = (this.y + this.endY) / 2 + (Math.random() - 0.5) * 200;
+                    this.life = 0.5; // Short-lived
+                }
+                update() {
+                    this.life -= 0.03;
+                    return this.life > 0;
+                }
+                draw() {
+                    ruinsCtx.beginPath();
+                    ruinsCtx.moveTo(this.x, this.y);
+                    ruinsCtx.quadraticCurveTo(this.midX, this.midY, this.endX, this.endY);
+                    ruinsCtx.strokeStyle = `rgba(10, 10, 20, ${0.9 * this.life})`;
+                    ruinsCtx.lineWidth = Math.random() * 3 + 1;
+                    ruinsCtx.shadowColor = `rgba(251, 191, 36, 0.7)`;
+                    ruinsCtx.shadowBlur = 15;
+                    ruinsCtx.stroke();
+                    ruinsCtx.shadowBlur = 0;
+                }
+            }
+            
+            // Kaia's Animations
+            class GreenLeaf extends Particle {
+                constructor() {
+                    super(Math.random() * ruinsCanvas.width, -10);
+                    this.size = Math.random() * 6 + 6;
+                    this.speedY = Math.random() * 0.7 + 0.4;
+                    this.rotation = Math.random() * Math.PI * 2;
+                    this.sway = Math.random() * Math.PI * 2;
+                    this.swaySpeed = Math.random() * 0.03 + 0.02;
+                    this.swayAmplitude = Math.random() * 0.6 + 0.3;
+                }
+                update() {
+                    this.y += this.speedY;
+                    this.sway += this.swaySpeed;
+                    this.x += Math.sin(this.sway) * this.swayAmplitude;
+                    this.rotation += this.swaySpeed * 0.5;
+                    if (this.y > ruinsCanvas.height + 10) this.life = 0;
+                    return super.update();
+                }
+                draw() {
+                    ruinsCtx.save();
+                    ruinsCtx.translate(this.x, this.y);
+                    ruinsCtx.rotate(this.rotation);
+                    ruinsCtx.beginPath();
+                    ruinsCtx.moveTo(0, -this.size / 2);
+                    ruinsCtx.bezierCurveTo(this.size / 2, -this.size / 3, this.size / 2, this.size / 3, 0, this.size / 2);
+                    ruinsCtx.bezierCurveTo(-this.size / 2, this.size / 3, -this.size / 2, -this.size / 3, 0, -this.size / 2);
+                    ruinsCtx.fillStyle = `rgba(100, 200, 120, ${0.8 * this.life})`;
+                    ruinsCtx.shadowColor = `rgba(180, 255, 200, 0.5)`;
+                    ruinsCtx.shadowBlur = 4;
+                    ruinsCtx.fill();
+                    ruinsCtx.restore();
+                }
+            }
+            class Spore extends Particle {
+                constructor() { super(Math.random() * ruinsCanvas.width, ruinsCanvas.height + 10); this.vy = -(Math.random() * 0.8 + 0.2); this.vx = (Math.random() - 0.5) * 0.4; this.radius = Math.random() * 2 + 1; this.alpha = Math.random() * 0.7 + 0.3; this.pulse = Math.random() * Math.PI * 2; }
+                update() { this.y += this.vy; this.x += this.vx; this.pulse += 0.05; if (this.y < -10) this.life = 0; return super.update(); }
+                draw() { const currentRadius = this.radius + Math.sin(this.pulse) * 0.5; const grad = ruinsCtx.createRadialGradient(this.x, this.y, 0, this.x, this.y, currentRadius); grad.addColorStop(0, `rgba(134, 239, 172, ${this.alpha * this.life})`); grad.addColorStop(1, `rgba(134, 239, 172, 0)`); ruinsCtx.fillStyle = grad; ruinsCtx.beginPath(); ruinsCtx.arc(this.x, this.y, currentRadius, 0, Math.PI * 2); ruinsCtx.fill(); }
+            }
+            class GlowingVine extends Particle {
+                constructor() {
+                    const edge = Math.floor(Math.random() * 4);
+                    let x, y;
+                    if (edge === 0) { x = 0; y = Math.random() * ruinsCanvas.height; } // left
+                    else if (edge === 1) { x = ruinsCanvas.width; y = Math.random() * ruinsCanvas.height; } // right
+                    else if (edge === 2) { x = Math.random() * ruinsCanvas.width; y = 0; } // top
+                    else { x = Math.random() * ruinsCanvas.width; y = ruinsCanvas.height; } // bottom
+                    super(x, y);
+
+                    this.points = [{x: this.x, y: this.y}];
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.maxLength = Math.random() * 100 + 50;
+                    this.life = 5;
+                }
+                update() {
+                    if (this.points.length < this.maxLength) {
+                        const lastPoint = this.points[this.points.length - 1];
+                        this.angle += (Math.random() - 0.5) * 0.5;
+                        const newX = lastPoint.x + Math.cos(this.angle);
+                        const newY = lastPoint.y + Math.sin(this.angle);
+                        this.points.push({x: newX, y: newY});
+                    }
+                    this.life -= 0.01;
+                    return this.life > 0;
+                }
+                draw() {
+                    ruinsCtx.beginPath();
+                    ruinsCtx.moveTo(this.points[0].x, this.points[0].y);
+                    for (let i = 1; i < this.points.length; i++) {
+                        ruinsCtx.lineTo(this.points[i].x, this.points[i].y);
+                    }
+                    ruinsCtx.strokeStyle = `rgba(163, 230, 53, ${0.5 * this.life})`;
+                    ruinsCtx.lineWidth = 1.5;
+                    ruinsCtx.shadowBlur = 10;
+                    ruinsCtx.shadowColor = 'rgba(163, 230, 53, 1)';
+                    ruinsCtx.stroke();
+                    ruinsCtx.shadowBlur = 0;
+                }
+            }
+
+            // Raiden's Animations
+            class RainDrop extends Particle {
+                constructor() { super(Math.random() * ruinsCanvas.width, -20); this.len = Math.random() * 15 + 5; this.speed = Math.random() * 10 + 5; }
+                update() { this.y += this.speed; if (this.y > ruinsCanvas.height + 20) this.life = 0; return this.life > 0; }
+                draw() { ruinsCtx.strokeStyle = `rgba(147, 197, 253, 0.4)`; ruinsCtx.lineWidth = 1.5; ruinsCtx.beginPath(); ruinsCtx.moveTo(this.x, this.y); ruinsCtx.lineTo(this.x, this.y + this.len); ruinsCtx.stroke(); }
+            }
+             class WindGust extends Particle {
+                constructor() {
+                    super(-100, Math.random() * ruinsCanvas.height);
+                    this.speed = Math.random() * 5 + 5;
+                    this.len = Math.random() * 200 + 100;
+                }
+                update() {
+                    this.x += this.speed;
+                    if (this.x > ruinsCanvas.width + 100) this.life = 0;
+                    return super.update();
+                }
+                draw() {
+                    const grad = ruinsCtx.createLinearGradient(this.x, this.y, this.x + this.len, this.y);
+                    grad.addColorStop(0, `rgba(200, 220, 255, 0)`);
+                    grad.addColorStop(0.5, `rgba(200, 220, 255, ${0.1 * this.life})`);
+                    grad.addColorStop(1, `rgba(200, 220, 255, 0)`);
+                    ruinsCtx.strokeStyle = grad;
+                    ruinsCtx.lineWidth = 1;
+                    ruinsCtx.beginPath();
+                    ruinsCtx.moveTo(this.x, this.y);
+                    ruinsCtx.lineTo(this.x + this.len, this.y);
+                    ruinsCtx.stroke();
+                }
+            }
+            class LightningBolt {
+                constructor() { this.x = Math.random() * ruinsCanvas.width * 0.8 + ruinsCanvas.width * 0.1; this.segments = []; this.life = 1;
+                    let currentY = 0;
+                    let lastX = this.x;
+                    while (currentY < ruinsCanvas.height) {
+                        const newX = lastX + (Math.random() - 0.5) * 40;
+                        const newY = currentY + Math.random() * 50 + 20;
+                        this.segments.push({x: newX, y: newY});
+                        currentY = newY;
+                        lastX = newX;
+                    }
+                }
+                update() { this.life -= 0.05; return this.life > 0; }
+                draw() { ruinsCtx.save(); ruinsCtx.globalAlpha = this.life; ruinsCtx.strokeStyle = 'white'; ruinsCtx.lineWidth = 3; ruinsCtx.shadowBlur = 20; ruinsCtx.shadowColor = '#93c5fd'; ruinsCtx.beginPath(); ruinsCtx.moveTo(this.x, 0); this.segments.forEach(seg => { ruinsCtx.lineTo(seg.x, seg.y); }); ruinsCtx.stroke(); ruinsCtx.restore(); }
+            }
+            
+            class ThemePulse {
+                constructor(color) { this.x = ruinsCanvas.width / 2; this.y = ruinsCanvas.height / 2; this.radius = 0; this.maxRadius = ruinsCanvas.width; this.speed = 20; this.alpha = 0.5; this.color = color; }
+                update() { this.radius += this.speed; this.alpha -= 0.01; return this.alpha > 0; }
+                draw() { ruinsCtx.strokeStyle = `${this.color.slice(0, -1)}, ${this.alpha})`; ruinsCtx.lineWidth = 3; ruinsCtx.beginPath(); ruinsCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ruinsCtx.stroke(); }
+            }
+            window.triggerThemePulse = (color) => { themePulses.push(new ThemePulse(color)); }
+
+            function animate() {
+                ruinsCtx.clearRect(0, 0, ruinsCanvas.width, ruinsCanvas.height);
+                
+                switch(currentAnimationType) {
+                    case 'time':
+                        if (Math.random() > 0.98) particles.push(new TimeRift());
+                        if (Math.random() > 0.5) particles.push(new SakuraPetal());
+                        break;
+                    case 'desert':
+                        if (Math.random() > 0.3) particles.push(new DarkRainDrop());
+                        if (Math.random() > 0.6) particles.push(new FallingFeather());
+                        if (Math.random() > 0.99) particles.push(new BlackSlash());
+                        break;
+                    case 'forest':
+                        if (Math.random() > 0.7) particles.push(new GreenLeaf());
+                        if (Math.random() > 0.8) particles.push(new Spore());
+                        if (Math.random() > 0.99) particles.push(new GlowingVine());
+                        break;
+                    case 'storm':
+                        if (Math.random() > 0.1) particles.push(new RainDrop());
+                        if (Math.random() > 0.98) particles.push(new WindGust());
+                        if (Math.random() > 0.995) particles.push(new LightningBolt());
+                        break;
+                }
+
+                for(let i = particles.length - 1; i >= 0; i--) {
+                    if (particles[i].update()) {
+                        particles[i].draw();
+                    } else {
+                        particles.splice(i, 1);
+                    }
+                }
+
+                for (let i = themePulses.length - 1; i >= 0; i--) {
+                    if(themePulses[i].update()){
+                        themePulses[i].draw();
+                    } else {
+                        themePulses.splice(i, 1);
+                    }
+                }
+                
+                ruinsCtx.shadowBlur = 0;
+                requestAnimationFrame(animate);
+            }
+            animate();
+
+            const characters = [
+                 { id: "eizalith", name: "Eizalith", title: "Penjaga Gerbang Waktu", description: "Seorang penyihir abadi yang terikat pada Reruntuhan Waktu. Eizalith memanipulasi alur waktu untuk melindungi relik suci.", image: "https://i.pinimg.com/736x/33/3e/bd/333ebdb910251972068f734d9117f8ac.jpg", quote: "Satu detik bagimu, adalah keabadian bagiku.", theme: { glow: 'rgba(216, 180, 254, 0.7)', border: '#c084fc', text: '#d8b4fe' }, backgroundImage: "https://i.pinimg.com/736x/da/18/de/da18de6628dfd7038df662ec251e33ec.jpg", animationType: 'time' },
+                 { id: "vallus", name: "Vallus", title: "Sang Ksatria Pengembara", description: "Ksatria terakhir dari ordo yang telah musnah, mencari sisa-sisa peradabannya dengan pedang besar yang menyimpan jiwa leluhurnya.", image: "https://i.pinimg.com/736x/e9/c4/f1/e9c4f128320c3b6cf4db034b8ba1c930.jpg", quote: "Kehormatan tidak mati bersama jatuhnya sebuah kerajaan.", theme: { glow: 'rgba(251, 191, 36, 0.7)', border: '#fbbf24', text: '#fde047' }, backgroundImage: "https://i.pinimg.com/736x/3a/3c/03/3a3c03b6f9ba351483d752646ab4f32f.jpg", animationType: 'desert' },
+                 { id: "kaia", name: "Kaia", title: "Bisikan Hutan Belantara", description: "Menjadi satu dengan alam, Kaia adalah pemanah roh yang melindungi hutan kuno. Panahnya ditenagai oleh esensi kehidupan.", image: "https://i.pinimg.com/736x/4b/3c/ad/4b3cadec6c334d30a80083aa0c25aba9.jpg", quote: "Dengarkan angin, ia membawa kisah tentang segala yang hidup dan mati.", theme: { glow: 'rgba(74, 222, 128, 0.7)', border: '#4ade80', text: '#86efac' }, backgroundImage: "https://i.pinimg.com/736x/73/08/8d/73088d554b1e8776a939fc916d236291.jpg", animationType: 'forest' },
+                 { id: "raiden", name: "Raiden", title: "Murka Badai Surgawi", description: "Seorang ronin yang mampu mengendalikan petir. Ia mencari pertarungan terhebat di puncak reruntuhan, tempat badai dan langit bertemu.", image: "https://i.pinimg.com/736x/57/9d/1e/579d1ecc1d86f68e07a5f18331d7ec56.jpg", quote: "Di antara kilat dan guntur, di situlah aku menemukan kedamaian.", theme: { glow: 'rgba(96, 165, 250, 0.7)', border: '#60a5fa', text: '#93c5fd' }, backgroundImage: "https://i.pinimg.com/736x/71/f6/91/71f691ef6d4c4f3c3c1f1abe9bbfe60d.jpg", animationType: 'storm' }
+            ];
+            
+            const sliderContainer = document.getElementById('character-slider');
+            const paginationContainer = document.getElementById('pagination');
+            let currentSlide = 0;
+            
+            function updateSlide(index, isInitial = false) {
+                const char = characters[index];
+                
+                // Switch animation context
+                particles = []; // Clear old particles
+                currentAnimationType = char.animationType;
+
+                const root = document.documentElement;
+                root.style.setProperty('--theme-glow', char.theme.glow);
+                root.style.setProperty('--theme-border', char.theme.border);
+                root.style.setProperty('--theme-text', char.theme.text);
+                
+                // --- Background Image Transition ---
+                const newBgUrl = char.backgroundImage;
+                if (bgImage.src !== newBgUrl) {
+                    bgImage.style.opacity = 0;
+                    // Preload the new image before showing it
+                    const tempImg = new Image();
+                    tempImg.src = newBgUrl;
+                    tempImg.onload = () => {
+                        bgImage.src = newBgUrl;
+                        bgImage.style.opacity = 0.6; // Fade in
+                    };
+                }
+                
+                if (!isInitial) window.triggerThemePulse(char.theme.border);
+                
+                const card = document.createElement('div');
+                card.className = 'character-card';
+                card.innerHTML = `
+                    <div class="character-image-wrapper char-element"><img src="${char.image}" alt="${char.name}" class="character-image"></div>
+                    <div class="character-info-box">
+                        <p class="char-element char-title text-lg font-semibold text-gray-300">${char.title}</p>
+                        <h2 class="char-element char-name font-cinzel text-5xl font-bold uppercase text-glow">${char.name}</h2>
+                        <p class="char-element char-desc mt-4 text-gray-400">${char.description}</p>
+                        <blockquote class="char-element char-quote mt-6 border-l-2 pl-3 italic border-current text-gray-400"><p>"${char.quote}"</p></blockquote>
+                        <div class="char-element ai-features mt-6 flex flex-wrap justify-center gap-4">
+                            <button id="loreBtn_${char.id}" class="ai-button">Kisah ✨</button>
+                            <button id="dialogBtn_${char.id}" class="ai-button">Bicara ✨</button>
+                            <button id="questBtn_${char.id}" class="ai-button">Misi ✨</button>
+                            <button id="tacticBtn_${char.id}" class="ai-button">Taktik ✨</button>
+                        </div>
+                        <div id="aiContainer_${char.id}" class="hidden"></div>
+                    </div>`;
+                sliderContainer.innerHTML = '';
+                sliderContainer.appendChild(card);
+                document.getElementById(`loreBtn_${char.id}`).addEventListener('click', () => generateAiResponse('lore', char));
+                document.getElementById(`dialogBtn_${char.id}`).addEventListener('click', () => openDialog(char));
+                document.getElementById(`questBtn_${char.id}`).addEventListener('click', () => generateAiResponse('quest', char));
+                document.getElementById(`tacticBtn_${char.id}`).addEventListener('click', () => generateAiResponse('tactic', char));
+                setTimeout(() => card.classList.add('active'), 50);
+                document.querySelectorAll('.pagination-dot').forEach((dot, i) => dot.classList.toggle('active', i === index));
+            }
+            
+            function showAiContent(container, content, type) {
+                container.innerHTML = content;
+                container.className = `ai-content ${type}-content`;
+                container.classList.remove('hidden');
+            }
+
+            async function generateAiResponse(type, character) {
+                const btn = document.getElementById(`${type}Btn_${character.id}`);
+                const aiContainer = document.getElementById(`aiContainer_${character.id}`);
+                const allButtons = btn.parentElement.querySelectorAll('button');
+                
+                allButtons.forEach(b => b.disabled = true);
+                let loadingMessage = "";
+                let prompt = "";
+
+                switch(type) {
+                    case 'lore':
+                        loadingMessage = "Merangkai takdir...";
+                        prompt = `Anda adalah seorang ahli sejarah di dunia fantasi bernama Aethel. Buatkan sebuah penggalan kisah atau lore rahasia yang singkat (2-3 kalimat) dan misterius untuk karakter berikut. Gaya tulisan harus puitis dan epik. Karakter: Nama=${character.name}, Gelar=${character.title}, Deskripsi=${character.description}`;
+                        break;
+                    case 'quest':
+                        loadingMessage = "Menyiapkan misi...";
+                        prompt = `Kamu adalah seorang Game Master di dunia fantasi Aethel. Buatkan sebuah misi singkat untuk pemain yang berinteraksi dengan karakter berikut. Misi harus terasa epik dan sesuai dengan tema karakter. Format jawabanmu dengan jelas menggunakan heading **Misi:**, **Tujuan:**, dan **Hadiah:**. Karakter: Nama=${character.name}, Gelar=${character.title}, Deskripsi=${character.description}.`;
+                        break;
+                    case 'tactic':
+                        const scenarios = ["menghadapi segerombolan goblin di hutan lebat", "terkepung oleh golem batu di reruntuhan sempit", "melawan naga bayangan di puncak gunung berapi", "disergap oleh pembunuh tak kasat mata di lorong kastil"];
+                        const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+                        loadingMessage = "Menganalisis taktik...";
+                        prompt = `Anda adalah seorang ahli strategi perang. Jelaskan secara singkat (2-3 kalimat) dan keren bagaimana karakter ini akan bertarung. Skenario: ${character.name}, sang ${character.title}, ${scenario}. Kepribadiannya: ${character.description}.||SCENARIO:${scenario}`;
+                        break;
+                }
+
+                showAiContent(aiContainer, `<span class="spinner"></span>${loadingMessage}`, type);
+
+                try {
+                    let responseText = await callGemini(prompt);
+                    let formattedText = responseText.replace(/\n/g, '<br>');
+
+                    if(type === 'quest') {
+                        formattedText = formattedText.replace(/\*\*Misi:\*\*/g, '<h4>Misi:</h4>').replace(/\*\*Tujuan:\*\*/g, '<h4>Tujuan:</h4>').replace(/\*\*Hadiah:\*\*/g, '<h4>Hadiah:</h4>');
+                    }
+                    if(type === 'tactic') {
+                        const [scenarioText, mainText] = prompt.split('||SCENARIO:');
+                        formattedText = `<h4>Skenario: ${mainText.charAt(0).toUpperCase() + mainText.slice(1)}</h4><br>${responseText}`;
+                    }
+
+                    showAiContent(aiContainer, formattedText, type);
+                } catch (error) {
+                    showAiContent(aiContainer, `Sebuah fragmen ingatan hilang dalam aliran waktu... Coba lagi nanti.`, type);
+                } finally {
+                    allButtons.forEach(b => b.disabled = false);
+                }
+            }
+            
+            const dialogOverlay = document.getElementById('dialog-modal-overlay');
+            const dialogTitle = document.getElementById('dialog-title');
+            const dialogMessages = document.getElementById('dialog-messages');
+            const dialogForm = document.getElementById('dialog-input-form');
+            const dialogInput = document.getElementById('dialog-input');
+            const dialogSendBtn = document.getElementById('dialog-send-btn');
+            let activeCharacter = null;
+            let activeChatHistory = [];
+
+            function openDialog(character) {
+                activeCharacter = character;
+                activeChatHistory = [
+                    { role: "model", parts: [{ text: `Kamu adalah ${character.name}, ${character.title}. Kepribadianmu: ${character.description}. Kutipan terkenalamu: "${character.quote}". Jawablah sebagai karaktermu dengan singkat (1-3 kalimat) dan puitis dalam bahasa Indonesia.` }] },
+                    { role: "user", parts: [{ text: "Salam."}] }
+                ];
+                dialogTitle.textContent = `Bicara dengan ${character.name}`;
+                dialogMessages.innerHTML = '';
+                dialogOverlay.classList.add('visible');
+                getInitialGreeting();
+            }
+            
+            async function getInitialGreeting() {
+                const greeting = "Salam, pengembara. Apa yang ingin kau ketahui?";
+                appendMessage(greeting, 'char');
+                activeChatHistory.push({ role: "model", parts: [{ text: greeting }] });
+            }
+
+            function closeDialog() {
+                dialogOverlay.classList.remove('visible');
+                activeCharacter = null;
+                activeChatHistory = [];
+            }
+
+            dialogForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const userInput = dialogInput.value.trim();
+                if (!userInput || !activeCharacter) return;
+                
+                appendMessage(userInput, 'user');
+                activeChatHistory.push({ role: "user", parts: [{ text: userInput }] });
+                dialogInput.value = '';
+                dialogSendBtn.disabled = true;
+                
+                const thinkingMessage = appendMessage("", "char");
+                thinkingMessage.innerHTML = '<span class="spinner"></span>';
+
+                try {
+                    const responseText = await callGemini(null, activeChatHistory);
+                    thinkingMessage.innerHTML = responseText.replace(/\n/g, '<br>');
+                    activeChatHistory.push({ role: "model", parts: [{ text: responseText }] });
+                } catch (error) {
+                    thinkingMessage.textContent = "Maaf, pikiranku sedang berkelana di antara reruntuhan waktu...";
+                } finally {
+                    dialogSendBtn.disabled = false;
+                    dialogInput.focus();
+                }
+            });
+            
+            function appendMessage(text, type) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', type);
+                messageDiv.textContent = text;
+                dialogMessages.appendChild(messageDiv);
+                dialogMessages.scrollTop = dialogMessages.scrollHeight;
+                return messageDiv;
+            }
+
+             async function callGemini(prompt, history = null) {
+                const payload = { 
+                    contents: history ? history : [{ role: "user", parts: [{ text: prompt }] }]
+                };
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) {
+                    console.error("API Error Response:", await response.text());
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+                const result = await response.json();
+                if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    console.error("Invalid API response structure:", result);
+                    throw new Error("Respon dari AI tidak valid.");
+                }
+            }
+            document.getElementById('dialog-close-btn').addEventListener('click', closeDialog);
+            dialogOverlay.addEventListener('click', (e) => { if(e.target === dialogOverlay) closeDialog(); });
+
+            const missionBoardOverlay = document.getElementById('mission-board-overlay');
+            const openMissionBtn = document.getElementById('open-mission-board-btn');
+            const closeMissionBtn = document.getElementById('mission-board-close-btn');
+            const missionList = document.getElementById('mission-list');
+            const dailyMissions = [
+                 { title: "Gema yang Hilang", desc: "Temukan tiga Echo Crystal yang tersebar di sekitar reruntuhan air terjun." },
+                 { title: "Perburuan Golem", desc: "Kalahkan Golem Penjaga Kuno yang bangkit di dekat gerbang utara." },
+                 { title: "Ramuan Cahaya Bulan", desc: "Kumpulkan 5 Moonpetal Herb yang hanya mekar di bawah cahaya portal." }
+            ];
+
+            function populateMissions() {
+                missionList.innerHTML = '';
+                dailyMissions.forEach((mission, index) => {
+                    const missionEl = document.createElement('div');
+                    missionEl.className = 'mission-card';
+                    missionEl.innerHTML = `<h4>${mission.title}</h4><p>${mission.desc}</p><button class="mission-accept-btn" data-mission-id="${index}">Terima Misi</button><div id="mission-narrative-${index}" class="hidden"></div>`;
+                    missionList.appendChild(missionEl);
+                });
+                missionList.querySelectorAll('.mission-accept-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const missionId = btn.dataset.missionId;
+                        const mission = dailyMissions[missionId];
+                        const narrativeDiv = document.getElementById(`mission-narrative-${missionId}`);
+                        btn.disabled = true;
+                        narrativeDiv.classList.remove('hidden');
+                        narrativeDiv.innerHTML = '<span class="spinner"></span> Kau merasakan panggilan takdir...';
+                        try {
+                            const prompt = `Anda adalah Game Master. Berikan narasi singkat (1-2 kalimat) yang imersif saat pemain menerima misi "${mission.title}" di dunia Aethel.`;
+                            const narrativeText = await callGemini(prompt);
+                            narrativeDiv.style.marginTop = '1rem';
+                            narrativeDiv.style.padding = '0.5rem';
+                            narrativeDiv.style.borderLeft = '2px solid #8f724f';
+                            narrativeDiv.innerHTML = narrativeText;
+                        } catch (error) {
+                            narrativeDiv.innerHTML = 'Panggilan takdir terganggu oleh anomali...';
+                        }
+                    });
+                });
+            }
+
+            openMissionBtn.addEventListener('click', () => { missionBoardOverlay.classList.add('visible'); populateMissions(); startMissionBoardAnimation(); });
+            closeMissionBtn.addEventListener('click', () => { missionBoardOverlay.classList.remove('visible'); stopMissionBoardAnimation(); });
+            
+            const aboutUsOverlay = document.getElementById('about-us-overlay');
+            document.getElementById('open-about-us-btn').addEventListener('click', () => { aboutUsOverlay.classList.add('visible'); startAboutUsAnimation(); });
+            document.getElementById('about-us-close-btn').addEventListener('click', () => { aboutUsOverlay.classList.remove('visible'); stopAboutUsAnimation(); });
+
+            const contactModal = document.getElementById('contact-modal');
+            document.getElementById('open-contact-btn').addEventListener('click', () => contactModal.classList.add('visible'));
+            document.getElementById('contact-close-btn').addEventListener('click', () => contactModal.classList.remove('visible'));
+            contactModal.addEventListener('click', (e) => { if(e.target === contactModal) contactModal.classList.remove('visible'); });
+
+            characters.forEach((_, index) => {
+                const dot = document.createElement('button');
+                dot.classList.add('pagination-dot');
+                dot.addEventListener('click', () => { currentSlide = index; updateSlide(currentSlide); });
+                paginationContainer.appendChild(dot);
+            });
+            document.getElementById('next-btn').addEventListener('click', () => { currentSlide = (currentSlide + 1) % characters.length; updateSlide(currentSlide); });
+            document.getElementById('prev-btn').addEventListener('click', () => { currentSlide = (currentSlide - 1 + characters.length) % characters.length; updateSlide(currentSlide); });
+            updateSlide(0, true);
+        });
+        
+        const missionCanvas = document.getElementById('mission-board-canvas');
+        const missionCtx = missionCanvas.getContext('2d');
+        let fireflies = [];
+        let missionAnimationId;
+        function resizeMissionCanvas() { missionCanvas.width = window.innerWidth; missionCanvas.height = window.innerHeight; }
+        class Firefly { constructor() { this.x = Math.random() * missionCanvas.width; this.y = Math.random() * missionCanvas.height; this.size = Math.random() * 2 + 1; this.speedX = (Math.random() - 0.5) * 0.5; this.speedY = (Math.random() - 0.5) * 0.5; this.alpha = 0; this.maxAlpha = Math.random() * 0.7 + 0.3; this.life = Math.random() * 200 + 100; } update() { this.x += this.speedX; this.y += this.speedY; if (this.life > 100) this.alpha = Math.min(this.maxAlpha, this.alpha + 0.05); else this.alpha = Math.max(0, this.alpha - 0.05); this.life--; } draw() { missionCtx.fillStyle = `rgba(252, 211, 77, ${this.alpha})`; missionCtx.shadowBlur = 10; missionCtx.shadowColor = 'rgba(252, 211, 77, 1)'; missionCtx.beginPath(); missionCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2); missionCtx.fill(); } }
+        function animateMissionBoard() {
+            missionCtx.clearRect(0, 0, missionCanvas.width, missionCanvas.height); missionCtx.shadowBlur = 0;
+            if (fireflies.length < 30 && Math.random() > 0.5) fireflies.push(new Firefly());
+            for(let i = fireflies.length - 1; i >= 0; i--) { fireflies[i].update(); fireflies[i].draw(); if (fireflies[i].life <= 0) fireflies.splice(i, 1); }
+            missionAnimationId = requestAnimationFrame(animateMissionBoard);
+        }
+        function startMissionBoardAnimation() { resizeMissionCanvas(); fireflies = []; if (!missionAnimationId) animateMissionBoard(); }
+        function stopMissionBoardAnimation() { cancelAnimationFrame(missionAnimationId); missionAnimationId = null; }
+
+        const aboutCanvas = document.getElementById('about-us-canvas');
+        const aboutCtx = aboutCanvas.getContext('2d');
+        let aboutAnimationId;
+        let nodes = [];
+        function resizeAboutCanvas() { aboutCanvas.width = window.innerWidth; aboutCanvas.height = window.innerHeight; }
+        class Node { constructor() { this.x = Math.random() * aboutCanvas.width; this.y = Math.random() * aboutCanvas.height; this.vx = (Math.random() - 0.5) * 0.5; this.vy = (Math.random() - 0.5) * 0.5; this.radius = Math.random() * 2 + 1; } update() { this.x += this.vx; this.y += this.vy; if(this.x < 0 || this.x > aboutCanvas.width) this.vx *= -1; if(this.y < 0 || this.y > aboutCanvas.height) this.vy *= -1; } draw() { aboutCtx.fillStyle = '#a3e635'; aboutCtx.beginPath(); aboutCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); aboutCtx.fill(); } }
+        function animateAboutUs() {
+            aboutCtx.clearRect(0, 0, aboutCanvas.width, aboutCanvas.height);
+            for(let i = 0; i < nodes.length; i++) {
+                nodes[i].update();
+                nodes[i].draw();
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const dist = Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y);
+                    if (dist < 150) {
+                        aboutCtx.strokeStyle = `rgba(163, 230, 53, ${1 - dist / 150})`;
+                        aboutCtx.lineWidth = 0.5;
+                        aboutCtx.beginPath();
+                        aboutCtx.moveTo(nodes[i].x, nodes[i].y);
+                        aboutCtx.lineTo(nodes[j].x, nodes[j].y);
+                        aboutCtx.stroke();
+                    }
+                }
+            }
+            aboutAnimationId = requestAnimationFrame(animateAboutUs);
+        }
+        function startAboutUsAnimation() { resizeAboutCanvas(); if(nodes.length === 0) {for (let i = 0; i < 50; i++) { nodes.push(new Node()); }} if (!aboutAnimationId) animateAboutUs(); }
+        function stopAboutUsAnimation() { cancelAnimationFrame(aboutAnimationId); aboutAnimationId = null; }
+    </script>
+</body>
+</html>
