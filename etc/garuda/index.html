@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GARUDA - High-Fidelity Prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+        .sidebar {
+            background-color: #161b22;
+            border-right: 1px solid #30363d;
+        }
+        .main-content {
+            background-color: #0d1117;
+        }
+        .card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            border-color: #58a6ff;
+        }
+        .card-glow {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(88, 166, 255, 0.15) 0%, rgba(88, 166, 255, 0) 70%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .card:hover .card-glow {
+            opacity: 1;
+        }
+        .table-row:hover {
+            background-color: #1f242c;
+        }
+        .status-pill {
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-new { background-color: rgba(248, 81, 73, 0.1); border: 1px solid #f85149; color: #f85149; }
+        .status-investigating { background-color: rgba(250, 170, 65, 0.1); border: 1px solid #faaa41; color: #faaa41; }
+        .status-closed { background-color: rgba(63, 185, 80, 0.1); border: 1px solid #3fb950; color: #3fb950; }
+
+        /* Map Styles */
+        #map-tooltip {
+            position: absolute;
+            background-color: rgba(13, 17, 23, 0.9);
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 12px;
+            color: #c9d1d9;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            backdrop-filter: blur(5px);
+            z-index: 50;
+        }
+        .map-hotspot {
+            cursor: pointer;
+        }
+        .flow-line {
+            stroke-dasharray: 10;
+            animation: dash 2s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -20; }
+        }
+
+        /* Graph Explorer Styles */
+        .graph-node { cursor: pointer; transition: transform 0.2s ease; }
+        .graph-node:hover { transform: scale(1.1); }
+        .graph-node circle { transition: all 0.3s ease; }
+        .graph-node.highlighted circle { stroke: #58a6ff; stroke-width: 4px; }
+        .graph-node.super-node circle { fill: #db6d28; }
+        .graph-edge { transition: stroke 0.3s ease, stroke-width 0.3s ease; }
+        .graph-edge.highlighted { stroke: #58a6ff; stroke-width: 2.5px; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0d1117; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #58a6ff; }
+        
+        /* Fade-in animation */
+        .fade-in { animation: fadeInAnimation 0.5s ease-in-out; }
+        @keyframes fadeInAnimation {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="sidebar w-20 lg:w-64 flex flex-col items-center lg:items-start p-4 transition-all duration-300">
+            <div class="flex items-center justify-center lg:justify-start w-full h-12 mb-8">
+                <svg class="w-10 h-10 text-sky-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.03 1.125 0 1.131.094 1.976 1.057 1.976 2.192V7.5M8.25 7.5h7.5m-7.5 6.75h7.5m-7.5 3.75h7.5M3 12h18M3 12c0-1.657 1.343-3 3-3h1.372c.862 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 0 1 0 1.694l-1.105 4.423A1.875 1.875 0 0 1 9.372 21H6c-1.657 0-3-1.343-3-3V12Z" />
+                </svg>
+                <span class="text-2xl font-bold text-white ml-3 hidden lg:inline">GARUDA</span>
+            </div>
+            <nav class="flex-grow">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="#" id="nav-dashboard" class="flex items-center justify-center lg:justify-start h-12 px-4 rounded-lg bg-blue-800/20 text-sky-400 border border-sky-500/50">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                            <span class="ml-4 font-semibold hidden lg:inline">Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" id="nav-investigation" class="flex items-center justify-center lg:justify-start h-12 px-4 rounded-lg text-gray-400 hover:bg-gray-700/50 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            <span class="ml-4 font-semibold hidden lg:inline">Investigasi</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="mt-auto flex flex-col items-center lg:items-start w-full">
+                <img src="https://placehold.co/40x40/58a6ff/0d1117?text=R" alt="Avatar Pengguna" class="rounded-full mb-4 border-2 border-sky-500">
+                <div class="hidden lg:block">
+                    <p class="font-semibold text-white">Rivaldy</p>
+                    <p class="text-sm text-gray-400">Lead Fraud Analyst</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content flex-1 p-6 lg:p-8 overflow-y-auto">
+            <!-- Dashboard View -->
+            <div id="dashboard-view" class="fade-in">
+                <h1 class="text-3xl font-bold text-white mb-6">Command Center</h1>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+                    <!-- KPI Cards -->
+                    <div class="card p-5">
+                        <div class="card-glow"></div>
+                        <div class="flex items-center justify-between"><h3 class="text-sm font-medium text-gray-400">Total Transaksi</h3></div>
+                        <p class="text-3xl font-bold text-white mt-2">15.2 Jt</p>
+                        <div class="h-16 w-full mt-3"><canvas id="kpiChart1"></canvas></div>
+                    </div>
+                    <div class="card p-5">
+                        <div class="card-glow"></div>
+                        <div class="flex items-center justify-between"><h3 class="text-sm font-medium text-gray-400">Ancaman Terdeteksi</h3></div>
+                        <p class="text-3xl font-bold text-red-400 mt-2">1,245</p>
+                        <div class="h-16 w-full mt-3"><canvas id="kpiChart2"></canvas></div>
+                    </div>
+                    <div class="card p-5">
+                        <div class="card-glow"></div>
+                        <div class="flex items-center justify-between"><h3 class="text-sm font-medium text-gray-400">Nilai Berisiko</h3></div>
+                        <p class="text-3xl font-bold text-amber-400 mt-2">Rp 2.1 M</p>
+                        <div class="h-16 w-full mt-3"><canvas id="kpiChart3"></canvas></div>
+                    </div>
+                    <div class="card p-5">
+                        <div class="card-glow"></div>
+                        <div class="flex items-center justify-between"><h3 class="text-sm font-medium text-gray-400">Akurasi Model</h3></div>
+                        <p class="text-3xl font-bold text-sky-400 mt-2">97.5%</p>
+                        <div class="h-16 w-full mt-3"><canvas id="kpiChart4"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
+                    <div class="lg:col-span-3 card p-6">
+                        <h3 class="text-lg font-semibold text-white mb-4">Tren Ancaman (24 Jam Terakhir)</h3>
+                        <div class="h-80"><canvas id="threatTrendChart"></canvas></div>
+                    </div>
+                    <div class="lg:col-span-2 card p-6 relative">
+                        <h3 class="text-lg font-semibold text-white mb-4">Peta Geografis Ancaman</h3>
+                        <div id="map-container" class="h-80 w-full rounded-lg relative">
+                             <!-- Detailed Indonesia SVG Map will be injected here -->
+                            <svg id="indonesia-map" class="w-full h-full" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet"></svg>
+                        </div>
+                        <div id="map-legend" class="absolute bottom-4 right-4 text-xs text-gray-400 bg-black/50 p-2 rounded">
+                            <div class="flex items-center"><div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>Judi Online</div>
+                            <div class="flex items-center mt-1"><div class="w-3 h-3 rounded-full bg-amber-500 mr-2"></div>Akun Mule</div>
+                            <div class="flex items-center mt-1"><div class="w-3 h-3 rounded-full bg-violet-500 mr-2"></div>Carding</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-6">
+                    <h3 class="text-lg font-semibold text-white mb-4">Antrian Peringatan Aktif</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="text-xs text-gray-400 uppercase border-b border-gray-700">
+                                <tr>
+                                    <th class="px-4 py-3">ID Kasus</th>
+                                    <th class="px-4 py-3">Waktu</th>
+                                    <th class="px-4 py-3">Entitas Terlibat</th>
+                                    <th class="px-4 py-3">Skor Risiko</th>
+                                    <th class="px-4 py-3">Jenis Ancaman</th>
+                                    <th class="px-4 py-3">Status</th>
+                                    <th class="px-4 py-3 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-row border-b border-gray-800">
+                                    <td class="px-4 py-4 font-mono text-sky-400">CASE-9812</td><td class="px-4 py-4">14:05:12</td>
+                                    <td class="px-4 py-4 font-semibold">acc_1gHjK9Lp</td><td class="px-4 py-4"><span class="font-bold text-red-400 text-base">98%</span></td>
+                                    <td class="px-4 py-4">Pola Jaringan Judi Online</td><td class="px-4 py-4"><span class="status-pill status-new">Baru</span></td>
+                                    <td class="px-4 py-4 text-center"><button class="font-semibold text-sky-400 hover:text-white transition">Investigasi</button></td>
+                                </tr>
+                                 <tr class="table-row border-b border-gray-800">
+                                    <td class="px-4 py-4 font-mono text-sky-400">CASE-9813</td><td class="px-4 py-4">14:02:31</td>
+                                    <td class="px-4 py-4 font-semibold">dev_fG5sD8vN</td><td class="px-4 py-4"><span class="font-bold text-amber-400 text-base">82%</span></td>
+                                    <td class="px-4 py-4">Indikasi Social Engineering</td><td class="px-4 py-4"><span class="status-pill status-new">Baru</span></td>
+                                    <td class="px-4 py-4 text-center"><button class="font-semibold text-sky-400 hover:text-white transition">Investigasi</button></td>
+                                </tr>
+                                <tr class="table-row border-b border-gray-800">
+                                    <td class="px-4 py-4 font-mono text-sky-400">CASE-9811</td><td class="px-4 py-4">13:50:44</td>
+                                    <td class="px-4 py-4 font-semibold">merch_fT4sD3vN</td><td class="px-4 py-4"><span class="font-bold text-amber-400 text-base">85%</span></td>
+                                    <td class="px-4 py-4">Transaksi Cepat Berulang</td><td class="px-4 py-4"><span class="status-pill status-investigating">Investigasi</span></td>
+                                    <td class="px-4 py-4 text-center"><button class="font-semibold text-sky-400 hover:text-white transition">Lanjutkan</button></td>
+                                </tr>
+                                <tr class="table-row">
+                                    <td class="px-4 py-4 font-mono text-sky-400">CASE-9809</td><td class="px-4 py-4">12:30:19</td>
+                                    <td class="px-4 py-4 font-semibold">acc_bV2cM7xY</td><td class="px-4 py-4"><span class="font-bold text-red-400 text-base">95%</span></td>
+                                    <td class="px-4 py-4">Indikasi Pencucian Uang</td><td class="px-4 py-4"><span class="status-pill status-closed">Ditutup</span></td>
+                                    <td class="px-4 py-4 text-center"><button class="font-semibold text-sky-400 hover:text-white transition">Lihat Laporan</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Investigation View -->
+            <div id="investigation-view" class="hidden h-full">
+                <div class="flex flex-col h-full">
+                    <div class="flex justify-between items-center mb-4">
+                         <h1 class="text-3xl font-bold text-white">Investigasi Graf: <span class="font-mono text-sky-400">CASE-9812</span></h1>
+                        <div>
+                            <button id="highlight-path-btn" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-lg shadow-sky-600/20">Sorot Aliran Dana</button>
+                            <button id="highlight-super-node-btn" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded-lg ml-2 transition-colors shadow-lg shadow-amber-600/20">Tandai Super-Node</button>
+                        </div>
+                    </div>
+                    <div class="flex-grow flex gap-6 overflow-hidden">
+                        <div class="flex-grow card relative overflow-hidden">
+                            <div id="graph-canvas" class="w-full h-full"></div>
+                            <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                                <label for="timeline-slider" class="block mb-2 text-sm font-medium text-gray-300">Timeline Transaksi</label>
+                                <input id="timeline-slider" type="range" min="0" max="10" value="10" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-sky-500">
+                            </div>
+                        </div>
+                        <div id="context-panel" class="w-96 card p-0 flex-shrink-0 flex flex-col transition-all duration-500 ease-in-out">
+                            <div id="context-placeholder" class="text-center text-gray-500 flex flex-col justify-center items-center h-full p-6">
+                                <svg class="w-16 h-16 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>
+                                <p class="font-semibold text-lg">Panel Kontekstual</p>
+                                <p class="text-sm">Klik sebuah node pada graf untuk melihat detailnya.</p>
+                            </div>
+                            <div id="context-content" class="hidden h-full flex flex-col"></div>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+        </main>
+    </div>
+    <div id="map-tooltip"></div>
+
+    <script>
+    // --- Chart.js Global Config ---
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = '#8b949e';
+    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+    // --- Sparkline Chart Helper ---
+    function createSparkline(canvasId, data, color) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 70);
+        gradient.addColorStop(0, `${color}33`);
+        gradient.addColorStop(1, `${color}00`);
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map((_, i) => i),
+                datasets: [{
+                    data: data,
+                    borderColor: color,
+                    borderWidth: 2,
+                    fill: true,
+                    backgroundColor: gradient,
+                    pointRadius: 0,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: { x: { display: false }, y: { display: false } },
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                layout: { padding: { top: 5, bottom: 5 } }
+            }
+        });
+    }
+
+    // --- Main Dashboard Chart ---
+    function createMainChart() {
+        const ctx = document.getElementById('threatTrendChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(248, 81, 73, 0.5)');
+        gradient.addColorStop(1, 'rgba(248, 81, 73, 0)');
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'],
+                datasets: [{
+                    label: 'Ancaman Terdeteksi',
+                    data: [15, 25, 40, 35, 60, 95, 110, 80],
+                    backgroundColor: gradient,
+                    borderColor: '#f85149',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#f85149',
+                    pointBorderColor: '#0d1117',
+                    pointBorderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } },
+                    x: { grid: { display: false }, ticks: { color: '#8b949e' } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+    
+    // --- Detailed Map Logic ---
+    async function initMap() {
+        const mapContainer = document.getElementById('indonesia-map');
+        const tooltip = document.getElementById('map-tooltip');
+        
+        try {
+            // Fetch a detailed SVG map of Indonesia from a reliable source (e.g., a Gist)
+            const response = await fetch('https://gist.githubusercontent.com/fajarnurwahid/2212f07997524a13f671/raw/50c224093c1b373fbe16335193e4330661201cf1/indonesia.svg');
+            if (!response.ok) throw new Error('Network response was not ok');
+            const svgText = await response.text();
+            mapContainer.innerHTML = svgText;
+
+            // Style the map paths for dark mode
+            mapContainer.querySelectorAll('path').forEach(p => {
+                p.setAttribute('fill', '#222b36');
+                p.setAttribute('stroke', '#444c56');
+                p.setAttribute('stroke-width', '0.5');
+            });
+        } catch (error) {
+            console.error("Could not load map SVG:", error);
+            mapContainer.innerHTML = `<p class="text-center text-gray-500">Gagal memuat peta. Menampilkan data cadangan.</p>`;
+        }
+
+        const hotspots = [
+            { id: 'jakarta', x: 430, y: 395, alerts: 125, type: 'Judi Online', size: 15, color: '#ef4444' },
+            { id: 'surabaya', x: 580, y: 420, alerts: 88, type: 'Akun Mule', size: 12, color: '#f59e0b' },
+            { id: 'medan', x: 190, y: 180, alerts: 62, type: 'Carding', size: 10, color: '#8b5cf6' },
+            { id: 'makassar', x: 740, y: 370, alerts: 45, type: 'Akun Mule', size: 9, color: '#f59e0b' },
+            { id: 'bandung', x: 460, y: 410, alerts: 71, type: 'Judi Online', size: 11, color: '#ef4444' },
+            { id: 'denpasar', x: 640, y: 440, alerts: 55, type: 'Carding', size: 9, color: '#8b5cf6' },
+            { id: 'palembang', x: 350, y: 320, alerts: 34, type: 'Akun Mule', size: 8, color: '#f59e0b' },
+        ];
+
+        const flows = [
+            { from: 'medan', to: 'jakarta', color: '#ef4444' },
+            { from: 'jakarta', to: 'surabaya', color: '#f59e0b' },
+            { from: 'jakarta', to: 'bandung', color: '#ef4444' },
+            { from: 'surabaya', to: 'denpasar', color: '#8b5cf6' },
+            { from: 'palembang', to: 'jakarta', color: '#f59e0b' },
+        ];
+        
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+        // Draw flows
+        flows.forEach(flow => {
+            const from = hotspots.find(h => h.id === flow.from);
+            const to = hotspots.find(h => h.id === flow.to);
+            if (!from || !to) return;
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', from.x);
+            line.setAttribute('y1', from.y);
+            line.setAttribute('x2', to.x);
+            line.setAttribute('y2', to.y);
+            line.setAttribute('stroke', flow.color);
+            line.setAttribute('stroke-width', '1.5');
+            line.setAttribute('opacity', '0.7');
+            line.classList.add('flow-line');
+            g.appendChild(line);
+        });
+
+        // Draw hotspots
+        hotspots.forEach(spot => {
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', spot.x);
+            circle.setAttribute('cy', spot.y);
+            circle.setAttribute('r', spot.size);
+            circle.setAttribute('fill', spot.color);
+            circle.setAttribute('opacity', '0.7');
+            circle.classList.add('map-hotspot');
+            
+            const pulse = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            pulse.setAttribute('cx', spot.x);
+            pulse.setAttribute('cy', spot.y);
+            pulse.setAttribute('r', spot.size);
+            pulse.setAttribute('fill', spot.color);
+            pulse.style.pointerEvents = 'none';
+
+            g.appendChild(circle);
+            g.appendChild(pulse);
+            
+            anime({
+                targets: pulse,
+                r: spot.size * 3,
+                opacity: 0,
+                easing: 'easeOutExpo',
+                duration: 1500,
+                loop: true,
+                delay: anime.random(0, 500)
+            });
+
+            circle.addEventListener('mouseenter', (e) => {
+                tooltip.innerHTML = `<strong class="capitalize font-bold text-white">${spot.id}</strong><br>${spot.alerts} Peringatan Aktif<br><span class="text-gray-400">Dominan: ${spot.type}</span>`;
+                tooltip.style.opacity = '1';
+            });
+            circle.addEventListener('mousemove', (e) => {
+                tooltip.style.left = `${e.pageX + 15}px`;
+                tooltip.style.top = `${e.pageY + 15}px`;
+            });
+            circle.addEventListener('mouseleave', () => {
+                tooltip.style.opacity = '0';
+            });
+        });
+        
+        mapContainer.appendChild(g);
+    }
+
+    // --- Investigation Graph Simulation ---
+    const graphData = {
+        nodes: [
+            { id: 'acc_1', label: 'Akun A', type: 'Akun', x: 150, y: 200, time: 1 },
+            { id: 'ip_1', label: '192.168.1.1', type: 'IP', x: 300, y: 100, time: 2 },
+            { id: 'dev_1', label: 'Device X', type: 'Perangkat', x: 300, y: 300, time: 2 },
+            { id: 'acc_2', label: 'Akun B (Bandar)', type: 'Akun', x: 450, y: 200, time: 3, isSuperNode: true },
+            { id: 'acc_3', label: 'Mule 1', type: 'Akun', x: 650, y: 100, time: 5 },
+            { id: 'acc_4', label: 'Mule 2', type: 'Akun', x: 650, y: 300, time: 6 },
+            { id: 'ip_2', label: '10.0.0.5', type: 'IP', x: 800, y: 200, time: 7 },
+        ],
+        edges: [
+            { source: 'acc_1', target: 'ip_1', time: 2 },
+            { source: 'acc_1', target: 'dev_1', time: 2 },
+            { source: 'ip_1', target: 'acc_2', time: 4 },
+            { source: 'dev_1', target: 'acc_2', time: 4 },
+            { source: 'acc_2', target: 'acc_3', time: 5, isPath: true },
+            { source: 'acc_2', target: 'acc_4', time: 6, isPath: true },
+            { source: 'acc_3', target: 'ip_2', time: 8 },
+            { source: 'acc_4', target: 'ip_2', time: 9 },
+        ],
+        details: {
+            'acc_1': { title: 'Akun A (acc_1)', owner: 'Budi Santoso', risk: '78%', history: [{ts:'14:01:15', desc:'Transfer ke Akun B (Rp 5.000.000)'}, {ts:'14:00:50', desc:'Login dari IP 192.168.1.1'}], alerts: ['Penggunaan IP Baru'], type: 'Akun' },
+            'ip_1': { title: 'IP 192.168.1.1', provider: 'IndiHome', location: 'Jakarta, ID', history: [{ts:'14:00:50', desc:'Akses Akun A'}, {ts:'14:03:20', desc:'Akses Akun B'}], alerts: ['IP terkait banyak akun'], type: 'IP' },
+            'dev_1': { title: 'Device X (dev_1)', model: 'Samsung S22', fingerprint: 'a4b2...c8d9', history: [{ts:'14:00:52', desc:'Login Akun A'}, {ts:'14:03:22', desc:'Login Akun B'}], alerts: ['Perangkat terkait banyak akun'], type: 'Perangkat' },
+            'acc_2': { title: 'Akun B (acc_2)', owner: 'Unknown', risk: '98%', history: [{ts:'14:05:01', desc:'Transfer ke Mule 1 (Rp 2.500.000)'}, {ts:'14:05:02', desc:'Transfer ke Mule 2 (Rp 2.500.000)'}], alerts: ['Pola Jaringan Judi Online', 'Super-Node Terdeteksi'], type: 'Akun' },
+            'acc_3': { title: 'Akun Mule 1 (acc_3)', owner: 'Siti Aminah', risk: '92%', history: [{ts:'14:10:30', desc:'Tarik tunai di ATM'}, {ts:'14:05:05', desc:'Terima dari Akun B (Rp 2.500.000)'}], alerts: ['Akun Mule Teridentifikasi'], type: 'Akun' },
+            'acc_4': { title: 'Akun Mule 2 (acc_4)', owner: 'Eko Wijoyo', risk: '91%', history: [{ts:'14:08:00', desc:'Pembelian Pulsa Massal'}, {ts:'14:05:06', desc:'Terima dari Akun B (Rp 2.500.000)'}], alerts: ['Akun Mule Teridentifikasi'], type: 'Akun' },
+            'ip_2': { title: 'IP 10.0.0.5', provider: 'Biznet', location: 'Surabaya, ID', history: [{ts:'14:10:25', desc:'Akses Mule 1'}, {ts:'14:07:55', desc:'Akses Mule 2'}], alerts: ['IP terkait banyak akun mule'], type: 'IP' },
+        }
+    };
+    
+    function drawGraph(maxTime = 10) {
+        const graphCanvas = document.getElementById('graph-canvas');
+        graphCanvas.innerHTML = '';
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('height', '100%');
+        svg.setAttribute('viewBox', '0 0 900 400');
+
+        const nodesMap = new Map(graphData.nodes.map(n => [n.id, n]));
+
+        graphData.edges.forEach(edge => {
+            if (edge.time > maxTime) return;
+            const sourceNode = nodesMap.get(edge.source);
+            const targetNode = nodesMap.get(edge.target);
+            if (!sourceNode || !targetNode) return;
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', sourceNode.x);
+            line.setAttribute('y1', sourceNode.y);
+            line.setAttribute('x2', targetNode.x);
+            line.setAttribute('y2', targetNode.y);
+            line.setAttribute('stroke', '#30363d');
+            line.setAttribute('stroke-width', '1.5');
+            line.classList.add('graph-edge');
+            if (edge.isPath) line.dataset.isPath = true;
+            svg.appendChild(line);
+        });
+        
+        const nodeIcons = {
+            'Akun': `<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>`,
+            'IP': `<path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"></path>`,
+            'Perangkat': `<path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"></path>`
+        };
+
+        graphData.nodes.forEach(node => {
+            if (node.time > maxTime) return;
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.classList.add('graph-node');
+            g.dataset.id = node.id;
+            if (node.isSuperNode) g.classList.add('super-node');
+
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', node.x);
+            circle.setAttribute('cy', node.y);
+            circle.setAttribute('r', '20');
+            circle.setAttribute('fill', '#161b22');
+            circle.setAttribute('stroke', '#8b949e');
+            circle.setAttribute('stroke-width', '2');
+            
+            const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            icon.setAttribute('x', node.x - 10);
+            icon.setAttribute('y', node.y - 10);
+            icon.setAttribute('width', 20);
+            icon.setAttribute('height', 20);
+            icon.setAttribute('viewBox', '0 0 24 24');
+            icon.setAttribute('fill', '#8b949e');
+            icon.innerHTML = nodeIcons[node.type];
+
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', node.x);
+            text.setAttribute('y', node.y + 35);
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('fill', '#c9d1d9');
+            text.setAttribute('font-size', '12');
+            text.textContent = node.label;
+
+            g.appendChild(circle);
+            g.appendChild(icon);
+            g.appendChild(text);
+            svg.appendChild(g);
+        });
+
+        graphCanvas.appendChild(svg);
+        addNodeClickListeners();
+    }
+    
+    function showContextInfo(nodeId) {
+        const details = graphData.details[nodeId];
+        if (!details) return;
+
+        const contextPlaceholder = document.getElementById('context-placeholder');
+        const contextContent = document.getElementById('context-content');
+        contextPlaceholder.classList.add('hidden');
+        
+        let contentHtml = `
+            <div class="p-6 border-b border-gray-700">
+                <h3 class="text-xl font-bold text-white">${details.title}</h3>
+                <p class="text-sm font-semibold text-${details.risk > 90 ? 'red' : 'amber'}-400">Skor Risiko: ${details.risk || 'N/A'}</p>
+                <span class="mt-2 inline-block px-2 py-1 bg-gray-700 text-gray-300 rounded text-xs font-semibold">${details.type}</span>
+            </div>
+            <div class="p-6 flex-grow overflow-y-auto">
+                <div class="mb-6">
+                    <h4 class="font-semibold text-gray-300 mb-2">Detail Entitas</h4>
+                    <ul class="text-sm text-gray-400 space-y-1 font-mono">
+                        ${details.owner ? `<li><span class="text-gray-500">Pemilik:</span> ${details.owner}</li>` : ''}
+                        ${details.location ? `<li><span class="text-gray-500">Lokasi:</span> ${details.location}</li>` : ''}
+                        ${details.model ? `<li><span class="text-gray-500">Model:</span> ${details.model}</li>` : ''}
+                        ${details.fingerprint ? `<li><span class="text-gray-500">FP:</span> ${details.fingerprint}</li>` : ''}
+                    </ul>
+                </div>
+                <div class="mb-6">
+                    <h4 class="font-semibold text-gray-300 mb-2">Riwayat Aktivitas Terbaru</h4>
+                    <ul class="text-sm text-gray-400 space-y-2">
+                        ${details.history.map(item => `<li class="flex items-start"><span class="font-mono text-sky-400 mr-3">${item.ts}</span><span>${item.desc}</span></li>`).join('')}
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-300 mb-2">Peringatan Terkait</h4>
+                    <div class="flex flex-wrap gap-2">
+                        ${details.alerts.map(alert => `<span class="px-2 py-1 bg-red-900/50 text-red-300 rounded-full text-xs">${alert}</span>`).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+        contextContent.innerHTML = contentHtml;
+        contextContent.classList.remove('hidden');
+        anime({ targets: '#context-content', opacity: [0, 1], translateY: [10, 0], duration: 400, easing: 'easeOutQuad' });
+    }
+
+    function addNodeClickListeners() {
+        document.querySelectorAll('.graph-node').forEach(nodeEl => {
+            nodeEl.addEventListener('click', () => {
+                document.querySelectorAll('.graph-node.highlighted').forEach(n => n.classList.remove('highlighted'));
+                nodeEl.classList.add('highlighted');
+                showContextInfo(nodeEl.dataset.id);
+            });
+        });
+    }
+
+    // --- DOMContentLoaded ---
+    document.addEventListener('DOMContentLoaded', function () {
+        // Init Sparklines
+        createSparkline('kpiChart1', [5, 9, 7, 8, 6, 8, 7], '#58a6ff');
+        createSparkline('kpiChart2', [2, 3, 2, 5, 4, 7, 8], '#f85149');
+        createSparkline('kpiChart3', [4, 3, 5, 6, 8, 7, 9], '#faaa41');
+        createSparkline('kpiChart4', [6, 6, 5, 6, 5, 5, 6], '#3fb950');
+
+        // Init Main Chart
+        createMainChart();
+        
+        // Init Map
+        initMap();
+
+        // Init Graph
+        drawGraph();
+
+        // View Switching
+        const navDashboard = document.getElementById('nav-dashboard');
+        const navInvestigation = document.getElementById('nav-investigation');
+        const dashboardView = document.getElementById('dashboard-view');
+        const investigationView = document.getElementById('investigation-view');
+        
+        function switchView(activeNav, activeView) {
+            [navDashboard, navInvestigation].forEach(nav => {
+                nav.classList.remove('bg-blue-800/20', 'text-sky-400', 'border', 'border-sky-500/50');
+                nav.classList.add('text-gray-400', 'hover:bg-gray-700/50', 'hover:text-white');
+            });
+            [dashboardView, investigationView].forEach(view => view.classList.add('hidden'));
+
+            activeNav.classList.add('bg-blue-800/20', 'text-sky-400', 'border', 'border-sky-500/50');
+            activeNav.classList.remove('text-gray-400', 'hover:bg-gray-700/50', 'hover:text-white');
+            activeView.classList.remove('hidden');
+            activeView.classList.add('fade-in');
+        }
+
+        navDashboard.addEventListener('click', (e) => { e.preventDefault(); switchView(navDashboard, dashboardView); });
+        navInvestigation.addEventListener('click', (e) => { e.preventDefault(); switchView(navInvestigation, investigationView); });
+
+        // Graph Interactivity
+        document.getElementById('timeline-slider').addEventListener('input', (e) => drawGraph(e.target.value));
+        document.getElementById('highlight-path-btn').addEventListener('click', () => {
+            document.querySelectorAll('.graph-edge').forEach(edge => {
+                if (edge.dataset.isPath) edge.classList.toggle('highlighted');
+            });
+        });
+        document.getElementById('highlight-super-node-btn').addEventListener('click', () => {
+            document.querySelectorAll('.graph-node.super-node').forEach(node => {
+                node.classList.toggle('highlighted');
+            });
+        });
+    });
+    </script>
+</body>
+</html>
